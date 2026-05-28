@@ -1,0 +1,17 @@
+# Cache directory
+.dashboard_cache/
+
+# Data folders (YYMM format)
+[0-9][0-9][0-9][0-9]/
+
+# Excel files
+*.xlsx
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS generated files
+.DS_Store
+Thumbs.db

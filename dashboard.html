@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DS Donation Dashboard</title>
+  <style>
+    :root{--ink:#151922;--muted:#687386;--line:#d9dee7;--panel:#fff;--page:#eef1f5;--nav:#0f1726;--blue:#1428a0;--red:#b42318;--shadow:0 12px 30px rgba(21,25,34,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:"Segoe UI","Malgun Gothic",Arial,sans-serif}
+    button,select,input,.file-button{height:38px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 10px;font:inherit;font-size:13px}
+    button,.file-button{display:inline-flex;align-items:center;justify-content:center;background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700;cursor:pointer;padding:0 16px;text-decoration:none}button.secondary,.file-button.secondary{background:#fff;color:var(--ink);border-color:var(--line)}button:disabled{opacity:.55;cursor:wait}
+    .intro{min-height:100vh;display:grid;place-items:center;padding:32px}.intro-card{width:min(560px,100%);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:44px;text-align:center}.intro h1{margin:0 0 12px;font-size:28px}.intro p{color:var(--muted);line-height:1.6;margin:0 0 24px}
+    .app{display:none;min-height:100vh;grid-template-columns:236px 1fr}.side{background:var(--nav);color:#fff;padding:24px 18px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:26px}.brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:8px;background:#ffd66b;color:#111;font-weight:800}.brand h1{margin:0;font-size:20px}.brand span{font-size:12px;color:#b9c3d6}.nav{display:grid;gap:8px}.nav button{width:100%;height:40px;border:0;background:transparent;color:#fff;text-align:left;border-radius:6px;font-weight:650}.nav button.active{background:#2c3444}
+    .main{padding:22px 28px 36px;min-width:0}.topbar{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;margin-bottom:18px}.title h2{margin:0 0 6px;font-size:24px}.title div{color:var(--muted);font-size:13px}.tools{display:flex;gap:10px;align-items:end;flex-wrap:wrap;justify-content:flex-end}.control{display:grid;gap:5px}.control label{font-size:11px;color:var(--muted);font-weight:700}.control select{min-width:180px}
+    .page{display:none}.page.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);overflow:hidden}.head{min-height:56px;padding:14px 18px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.head h3{margin:0;font-size:16px}.status{font-size:12px;color:var(--muted);white-space:nowrap}.section{padding:16px}.grid2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}.panel{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}.panel h4{margin:0;padding:12px 14px;border-bottom:1px solid var(--line);font-size:14px}.panel-body{padding:12px 14px}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
+    .weekdays,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.weekdays{background:#fbfcfe;border-bottom:1px solid var(--line)}.weekdays div{padding:10px 12px;color:var(--muted);font-size:12px;font-weight:700;text-align:center}.calendar{padding:10px;gap:8px}.day{min-height:132px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:11px;display:flex;flex-direction:column;gap:8px}.day.empty{border-color:transparent;background:transparent}.day.has-data{border-color:#e7c94f;background:linear-gradient(180deg,#fff 0%,var(--heat,#fff8cf) 100%)}.day-top{display:flex;justify-content:space-between;align-items:center}.day-no{font-size:15px;font-weight:760}.badge{border-radius:99px;padding:3px 8px;font-size:11px;font-weight:760}.badge.ok{color:#7a5a00;background:rgba(255,255,255,.62)}.badge.no{color:var(--red);background:#fff1f0}.value{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.value span{color:var(--muted);font-size:12px;margin-bottom:6px}.value strong{font-size:clamp(15px,1.55vw,24px);font-weight:780;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;max-width:100%}
+    .chart{width:100%;height:300px;display:block}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:10px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.checks{display:grid;gap:8px;max-height:260px;overflow:auto}.checks label{display:flex;gap:8px;align-items:center;font-size:13px}.checks input{width:16px;height:16px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}th,td{padding:9px 8px;border:1px solid #e6e9ef;text-align:left}th{background:#fbfcfe;color:var(--muted);font-weight:700}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.metric-head{background:#fff36a;color:#111}
+    .period-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.error{display:none;margin-top:16px;border:1px solid #f3b2b2;background:#fff4f4;color:#9d1c1c;border-radius:8px;padding:12px 14px;font-size:13px}.loading{position:fixed;inset:0;background:rgba(238,241,245,.88);display:none;place-items:center;z-index:10}.loading-card{width:min(440px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:24px}.loading-title{font-size:18px;font-weight:760;margin-bottom:8px}.loading-note{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:18px}.progress{height:8px;background:#edf0f5;border-radius:999px;overflow:hidden}.progress-bar{height:100%;width:8%;background:var(--blue);transition:width .25s ease}.progress-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-top:10px}.current-file{margin-top:12px;color:var(--ink);font-size:12px;overflow-wrap:anywhere}
+    input[type=file].hidden{position:fixed;left:-9999px;width:1px;height:1px;opacity:0}
+    @media(max-width:1100px){.app{grid-template-columns:1fr}.grid2,.period-grid{grid-template-columns:1fr}.topbar{grid-template-columns:1fr}.tools{justify-content:flex-start}}@media(max-width:720px){.main{padding:16px}.weekdays{display:none}.calendar{grid-template-columns:1fr}.tools,.row{display:grid}.control,.control select,button,input{width:100%}}
+  </style>
+</head>
+<body>
+  <section class="intro" id="intro"><div class="intro-card"><h1>DS부문 기부 대시보드</h1><p>분석하고자 하는 월별 폴더를 선택해 주세요. 대용량 파일은 진행률을 표시하고, 한 번 분석한 결과는 캐시합니다.</p><label class="file-button" id="openBtn" for="folderInput">Open</label></div></section>
+  <section class="app" id="app">
+    <aside class="side"><div class="brand"><div class="brand-mark">DS</div><div><h1>기부 현황</h1><span>Monthly Dashboard</span></div></div><nav class="nav"><button class="active" data-page="calendarPage">달력 현황</button><button data-page="businessPage">사업부별 비교</button><button data-page="periodPage">기간별 비교</button></nav></aside>
+    <main class="main"><div class="topbar"><div class="title"><h2 id="title">달력 현황</h2><div id="subtitle">-</div></div><div class="tools"><div class="control"><label>사업부</label><select id="unitSelect"></select></div><div class="control"><label>표시 지표</label><select id="metricSelect"><option value="participants">참여인원</option><option value="amount">기부금액</option><option value="average">평균 기부액</option></select></div><label class="file-button secondary" id="changeBtn" for="folderInput">Open</label></div></div>
+      <section class="page active" id="calendarPage"><div class="card"><div class="head"><div><h3 id="calendarTitle">달력</h3><div class="status" id="status">대기</div></div><div class="status" id="calendarLabel">DS부문 전체 · 참여인원</div></div><div class="weekdays"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div><div class="calendar" id="calendar"></div></div></section>
+      <section class="page" id="businessPage"><div class="grid2"><div class="card"><div class="head"><div><h3>사업부별 비교</h3><div class="status">체크한 사업부 기준 선그래프</div></div><button id="businessDownload">Excel 다운로드</button></div><div class="section"><div class="row"><div class="control"><label>시작일</label><input type="date" id="bizStart"></div><div class="control"><label>종료일</label><input type="date" id="bizEnd"></div></div><svg class="chart" id="businessChart"></svg><div class="legend" id="businessLegend"></div></div></div><div class="panel"><h4>사업부 선택</h4><div class="panel-body"><div class="checks" id="businessChecks"></div></div></div></div><div class="card" style="margin-top:16px"><div class="table-wrap" id="businessTable"></div></div></section>
+      <section class="page" id="periodPage"><div class="card"><div class="head"><div><h3>기간별 비교</h3><div class="status" id="periodStatus">비교할 월 폴더를 추가로 선택해 주세요.</div></div><label class="file-button" id="compareOpenBtn" for="compareInput">비교 월 Open</label></div><div class="section"><div class="row"><div class="control"><label>사업부</label><select id="periodUnit"></select></div><div class="control"><label>시작일</label><input type="date" id="periodStart"></div><div class="control"><label>종료일</label><input type="date" id="periodEnd"></div></div><div class="period-grid"><div class="panel"><h4>참여인원</h4><svg class="chart" id="periodParticipants"></svg></div><div class="panel"><h4>기부금액</h4><svg class="chart" id="periodAmount"></svg></div><div class="panel"><h4>평균 기부액</h4><svg class="chart" id="periodAverage"></svg></div></div></div></div></section>
+      <div class="error" id="errorBox"></div>
+    </main>
+  </section>
+  <div class="loading" id="loading"><div class="loading-card"><div class="loading-title">로딩중입니다</div><div class="loading-note">선택한 월별 데이터를 읽고 있습니다. 대용량 파일은 잠시 시간이 걸릴 수 있습니다.</div><div class="progress"><div class="progress-bar" id="progressBar"></div></div><div class="progress-meta"><span id="progressText">준비 중</span><span id="progressPct">0%</span></div><div class="current-file" id="currentFile">분석 준비 중</div></div></div>
+  <input id="folderInput" class="hidden" type="file" webkitdirectory directory multiple><input id="compareInput" class="hidden" type="file" webkitdirectory directory multiple>
+  <script>
+    const $ = id => document.getElementById(id);
+    const fmt = new Intl.NumberFormat("ko-KR");
+    const allUnits = "DS부문 전체";
+    const colors = ["#1428a0","#0b755d","#9c6b00","#7f56d9","#b42318","#0077b6","#475467","#c2410c"];
+    let currentData = null;
+    let compareData = null;
+    const metricMeta = {
+      participants: { label: "참여인원", suffix: "명" },
+      amount: { label: "기부금액", suffix: "원" },
+      average: { label: "평균 기부액", suffix: "원" }
+    };
+
+    function showError(message){ $("errorBox").textContent = message; $("errorBox").style.display = "block"; }
+    function clearError(){ $("errorBox").style.display = "none"; }
+    function folderName(files){
+      if(!files.length) throw new Error("선택된 파일이 없습니다.");
+      const name = (files[0].webkitRelativePath || files[0].name).split("/")[0];
+      if(!/^\d{4}$/.test(name)) throw new Error("폴더명은 YYMM 형식이어야 합니다. 예: 2603");
+      return name;
+    }
+    function setProgress(job){
+      const total = job.total || 0, processed = job.processed || 0;
+      const pct = total ? Math.round(processed / total * 100) : 8;
+      $("progressBar").style.width = `${Math.max(8, Math.min(100, pct))}%`;
+      $("progressText").textContent = total ? `${processed} / ${total}개 파일 처리` : "파일 목록 확인 중";
+      $("progressPct").textContent = total ? `${pct}%` : "";
+      $("currentFile").textContent = job.currentFile || "분석 중";
+    }
+    function loading(on){ $("loading").style.display = on ? "grid" : "none"; if(on) setProgress({processed:0,total:0,currentFile:"분석 준비 중"}); }
+    async function loadFolder(files){
+      const f = folderName(files);
+      loading(true);
+      const startRes = await fetch(`/api/start-analysis?folder=${encodeURIComponent(f)}`);
+      const start = await startRes.json();
+      if(!startRes.ok) throw new Error(start.error || "분석을 시작하지 못했습니다.");
+      for(;;){
+        const res = await fetch(`/api/job?id=${encodeURIComponent(start.jobId)}`);
+        const job = await res.json();
+        if(!res.ok) throw new Error(job.error || "작업 상태를 확인하지 못했습니다.");
+        setProgress(job);
+        if(job.status === "completed") return job.data;
+        if(job.status === "error") throw new Error(job.error || "분석 중 오류가 발생했습니다.");
+        await new Promise(resolve => setTimeout(resolve, 650));
+      }
+    }
+    function metricSource(day, unit){ if(!day.fileName) return null; if(unit === allUnits) return day.total; return day.businessUnits[unit] || {participants:0, amount:0}; }
+    function valueFor(src, metric){ if(!src) return null; if(metric === "participants") return src.participants; if(metric === "amount") return src.amount; return src.participants ? Math.round(src.amount / src.participants) : 0; }
+    function value(day, unit, metric){ return valueFor(metricSource(day, unit), metric); }
+    function format(v){ return v == null ? "-" : fmt.format(v); }
+    function dateStr(data, day){ return `${data.year}-${String(data.month).padStart(2,"0")}-${String(day).padStart(2,"0")}`; }
+    function setRangeInputs(data){
+      ["bizStart","periodStart"].forEach(id => $(id).value = dateStr(data, 1));
+      ["bizEnd","periodEnd"].forEach(id => $(id).value = dateStr(data, data.daysInMonth));
+      ["bizStart","bizEnd","periodStart","periodEnd"].forEach(id => { $(id).min = dateStr(data, 1); $(id).max = dateStr(data, data.daysInMonth); });
+    }
+    function inRange(day, startId, endId){
+      const s = Number($(startId).value.slice(-2) || 1), e = Number($(endId).value.slice(-2) || 31);
+      return day.day >= Math.min(s,e) && day.day <= Math.max(s,e);
+    }
+    function daysIn(data, startId, endId){ return data.calendar.filter(d => inRange(d, startId, endId)); }
+    function lineChart(svg, series, labels){
+      const w=900,h=300,p={l:58,r:18,t:18,b:34};
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.innerHTML = "";
+      const vals = series.flatMap(s => s.values.filter(v => v != null));
+      const max = vals.length ? Math.max(...vals) : 1, min = vals.length ? Math.min(...vals) : 0, range = max - min || 1, n = labels.length;
+      const sx = i => p.l + (n <= 1 ? 0 : i * (w-p.l-p.r) / (n-1));
+      const sy = v => h - p.b - ((v-min)/range) * (h-p.t-p.b);
+      for(let i=0;i<5;i++){ const y=p.t+i*(h-p.t-p.b)/4; svg.insertAdjacentHTML("beforeend", `<line x1="${p.l}" y1="${y}" x2="${w-p.r}" y2="${y}" stroke="#e8ecf2"/><text x="8" y="${y+4}" font-size="11" fill="#687386">${format(Math.round(max-range*i/4))}</text>`); }
+      labels.forEach((l,i)=>{ if(i%5===0 || i===n-1) svg.insertAdjacentHTML("beforeend", `<text x="${sx(i)}" y="${h-10}" text-anchor="middle" font-size="11" fill="#687386">${l}</text>`); });
+      series.forEach((s,si)=>{ const pts=s.values.map((v,i)=>v==null?null:[sx(i),sy(v)]).filter(Boolean); if(pts.length>1) svg.insertAdjacentHTML("beforeend", `<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="${s.color||colors[si%colors.length]}" stroke-width="2.4"/>`); pts.forEach(pt=>svg.insertAdjacentHTML("beforeend", `<circle cx="${pt[0]}" cy="${pt[1]}" r="2.6" fill="${s.color||colors[si%colors.length]}"/>`)); });
+    }
+    function heatColor(v,min,max){ const r=max-min,n=r>0?(v-min)/r:.45; return `hsl(48 ${82+Math.round(n*13)}% ${97-Math.round(n*25)}%)`; }
+    function fitValues(){ document.querySelectorAll(".value strong").forEach(n=>{ n.style.fontSize=""; let s=parseFloat(getComputedStyle(n).fontSize); while(n.scrollWidth>n.clientWidth && s>12){ s-=1; n.style.fontSize=`${s}px`; } }); }
+    function renderCalendar(){
+      const unit=$("unitSelect").value, metric=$("metricSelect").value, meta=metricMeta[metric];
+      $("calendarLabel").textContent = `${unit} · ${meta.label}`;
+      $("calendar").innerHTML = "";
+      const vals=currentData.calendar.map(d=>value(d,unit,metric)).filter(v=>v!=null), min=vals.length?Math.min(...vals):0, max=vals.length?Math.max(...vals):0;
+      for(let i=0;i<currentData.calendar[0].weekday;i++) $("calendar").insertAdjacentHTML("beforeend", `<div class="day empty"></div>`);
+      currentData.calendar.forEach(d=>{ const v=value(d,unit,metric), heat=v==null?"":`style="--heat:${heatColor(v,min,max)}"`, body=v==null?"-":format(v); $("calendar").insertAdjacentHTML("beforeend", `<div class="day ${v==null?"":"has-data"}" ${heat}><div class="day-top"><div class="day-no">${d.day}</div><span class="badge ${v==null?"no":"ok"}">${v==null?"파일 없음":"반영"}</span></div><div class="value"><span>${meta.label}</span><strong>${body}</strong></div></div>`); });
+      requestAnimationFrame(fitValues);
+    }
+    function renderBusinessControls(){
+      $("businessChecks").innerHTML = currentData.businessUnits.map((u,i)=>`<label><input type="checkbox" value="${u}" ${i===0?"checked":""}>${u}</label>`).join("");
+      $("businessChecks").querySelectorAll("input").forEach(c => c.addEventListener("change", renderBusiness));
+    }
+    function selectedUnits(){ return Array.from($("businessChecks").querySelectorAll("input:checked")).map(i=>i.value); }
+    function renderBusiness(){
+      const metric=$("metricSelect").value, days=daysIn(currentData,"bizStart","bizEnd"), labels=days.map(d=>d.day), units=selectedUnits();
+      const series=units.map((u,i)=>({name:u,color:colors[i%colors.length],values:days.map(d=>value(d,u,metric))}));
+      lineChart($("businessChart"), series, labels);
+      $("businessLegend").innerHTML = series.map((s,i)=>`<span><i style="background:${colors[i%colors.length]}"></i>${s.name}</span>`).join("");
+      const head=`<tr><th class="metric-head">${metricMeta[metric].label}</th>${days.map(d=>`<th class="num">${d.day}일</th>`).join("")}</tr>`;
+      const rows=units.map(u=>`<tr><td>${u}</td>${days.map(d=>`<td class="num">${format(value(d,u,metric))}</td>`).join("")}</tr>`).join("");
+      $("businessTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+    }
+    function csvDownload(){
+      const rows=Array.from($("businessTable").querySelectorAll("tr")).map(tr=>Array.from(tr.children).map(td=>`"${td.textContent.replaceAll('"','""')}"`).join(","));
+      const blob=new Blob(["\ufeff"+rows.join("\n")],{type:"text/csv;charset=utf-8"}), a=document.createElement("a");
+      a.href=URL.createObjectURL(blob); a.download=`${currentData.folder}_사업부별비교.csv`; a.click(); URL.revokeObjectURL(a.href);
+    }
+    function renderPeriod(){
+      if(!compareData) return;
+      const unit=$("periodUnit").value || allUnits, days=daysIn(currentData,"periodStart","periodEnd"), labels=days.map(d=>d.day);
+      $("periodStatus").textContent = `${currentData.monthLabel} vs ${compareData.monthLabel}`;
+      [["participants","periodParticipants"],["amount","periodAmount"],["average","periodAverage"]].forEach(([m,id])=>{
+        const base=days.map(d=>value(d,unit,m));
+        const comp=days.map(d=>{ const other=compareData.calendar[d.day-1]; return other?value(other,unit,m):null; });
+        lineChart($(id), [{name:currentData.monthLabel,color:"#1428a0",values:base},{name:compareData.monthLabel,color:"#0b755d",values:comp}], labels);
+      });
+    }
+    function renderAll(){ if(!currentData) return; renderCalendar(); renderBusiness(); renderPeriod(); }
+    function showDashboard(data){
+      currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · 캐시 사용":""}`;
+      $("unitSelect").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("periodUnit").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("unitSelect").value=allUnits; $("periodUnit").value=allUnits; setRangeInputs(data); renderBusinessControls(); renderAll();
+    }
+    $("openBtn").addEventListener("click",()=>{ $("folderInput").value=""; });
+    $("changeBtn").addEventListener("click",()=>{ $("folderInput").value=""; });
+    $("compareOpenBtn").addEventListener("click",()=>{ $("compareInput").value=""; });
+    $("businessDownload").addEventListener("click",csvDownload);
+    ["unitSelect","metricSelect","bizStart","bizEnd"].forEach(id=>$(id).addEventListener("change",renderAll));
+    ["periodUnit","periodStart","periodEnd"].forEach(id=>$(id).addEventListener("change",renderPeriod));
+    document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); document.querySelectorAll(".page").forEach(p=>p.classList.remove("active")); $(b.dataset.page).classList.add("active"); $("title").textContent=b.textContent; if(b.dataset.page==="businessPage") renderBusiness(); if(b.dataset.page==="periodPage") renderPeriod(); }));
+    $("folderInput").addEventListener("change",async()=>{ clearError(); try{ showDashboard(await loadFolder([...$("folderInput").files])); }catch(e){ showError(e.message); }finally{ loading(false); } });
+    $("compareInput").addEventListener("change",async()=>{ clearError(); try{ compareData=await loadFolder([...$("compareInput").files]); renderPeriod(); }catch(e){ showError(e.message); }finally{ loading(false); } });
+  </script>
+</body>
+</html>
