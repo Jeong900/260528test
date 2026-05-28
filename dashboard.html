@@ -1170,6 +1170,25 @@
     ["periodStartDay","periodEndDay","periodViewType"].forEach(id=>$(id).addEventListener("change",renderPeriod));
     
     document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); document.querySelectorAll(".page").forEach(p=>p.classList.remove("active")); $(b.dataset.page).classList.add("active"); $("title").textContent=b.textContent; if(b.dataset.page==="businessPage") renderBusiness(); if(b.dataset.page==="periodPage") renderPeriod(); }));
+    let lastLocalActivity = Date.now();
+    let lastActivitySent = 0;
+    function sendActivity(force=false){
+      const now = Date.now();
+      if(!force && now - lastActivitySent < 60000) return;
+      lastActivitySent = now;
+      fetch("/api/activity", {cache:"no-store"}).catch(()=>{});
+    }
+    function markLocalActivity(){
+      lastLocalActivity = Date.now();
+      sendActivity(false);
+    }
+    ["click","keydown","mousemove","scroll","touchstart","change"].forEach(type => {
+      window.addEventListener(type, markLocalActivity, {passive:true});
+    });
+    sendActivity(true);
+    setInterval(() => {
+      if(Date.now() - lastLocalActivity < 70000) sendActivity(true);
+    }, 60000);
     $("folderInput").addEventListener("change",async()=>{ clearError(); try{ showDashboard(await loadFolder([...$("folderInput").files])); }catch(e){ showError(e.message); }finally{ loading(false); } });
     
     $("compareInput").addEventListener("change",async()=>{ clearError(); try{ const d=await loadFolder([...$("compareInput").files]); compareDataMap[d.folder]=d; renderPeriodControls(); renderPeriod(); }catch(e){ showError(e.message); }finally{ loading(false); } });

@@ -15,6 +15,7 @@ python -m PyInstaller `
   --clean `
   --noconfirm `
   --onefile `
+  --noconsole `
   --name $Name `
   --add-data "dashboard.html;." `
   dashboard_server.py

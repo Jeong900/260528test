@@ -3,8 +3,10 @@ from __future__ import annotations
 import calendar
 import json
 import re
+import shutil
 import sys
 import threading
+import time
 import uuid
 import webbrowser
 import zipfile
@@ -26,6 +28,7 @@ else:
     APP_ROOT = ROOT
 CACHE_DIR = ROOT / ".dashboard_cache"
 PORT = 8765
+IDLE_TIMEOUT_SECONDS = 15 * 60
 FOLDER_RE = re.compile(r"^\d{4}$")
 FILE_RE = re.compile(r"^(\d{6})_데이터\(전체\)(?:_dummy)?\.xlsx$")
 ALL_UNITS = "DS부문 전체"
@@ -83,6 +86,40 @@ def get_unit_sort_key(name: str) -> int:
 
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
+LAST_ACTIVITY = time.monotonic()
+LAST_ACTIVITY_LOCK = threading.Lock()
+
+
+def mark_activity() -> None:
+    global LAST_ACTIVITY
+    with LAST_ACTIVITY_LOCK:
+        LAST_ACTIVITY = time.monotonic()
+
+
+def idle_seconds() -> float:
+    with LAST_ACTIVITY_LOCK:
+        return time.monotonic() - LAST_ACTIVITY
+
+
+def cleanup_cache() -> None:
+    try:
+        if CACHE_DIR.exists():
+            shutil.rmtree(CACHE_DIR)
+    except Exception:
+        if sys.stderr:
+            traceback.print_exc()
+
+
+def start_idle_monitor(server: ThreadingHTTPServer) -> None:
+    def monitor() -> None:
+        while True:
+            time.sleep(10)
+            if idle_seconds() >= IDLE_TIMEOUT_SECONDS:
+                cleanup_cache()
+                server.shutdown()
+                break
+
+    threading.Thread(target=monitor, daemon=True).start()
 
 
 def parse_year_month(folder_name: str) -> tuple[int, int]:
@@ -423,6 +460,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
+        mark_activity()
         try:
             if parsed.path in ("/", "/index.html"):
                 html_path = ROOT / "dashboard.html"
@@ -452,22 +490,30 @@ class DashboardHandler(BaseHTTPRequestHandler):
             elif parsed.path == "/api/analyze-folder":
                 folder = parse_qs(parsed.query).get("folder", [""])[0]
                 self.send_json(analyze_folder(folder))
+            elif parsed.path == "/api/activity":
+                self.send_json({"ok": True, "idleTimeoutSeconds": IDLE_TIMEOUT_SECONDS})
             else:
                 self.send_error(404)
         except Exception as exc:
-            traceback.print_exc()
+            if sys.stderr:
+                traceback.print_exc()
             self.send_json({"error": str(exc)}, status=400)
 
     def log_message(self, format: str, *args) -> None:
-        BaseHTTPRequestHandler.log_message(self, format, *args)
+        return
 
 
 def main() -> None:
     server = ThreadingHTTPServer(("127.0.0.1", PORT), DashboardHandler)
+    start_idle_monitor(server)
     url = f"http://127.0.0.1:{PORT}"
-    print(url, flush=True)
+    if sys.stdout:
+        print(url, flush=True)
     threading.Timer(0.8, lambda: webbrowser.open(url)).start()
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    finally:
+        server.server_close()
 
 
 if __name__ == "__main__":
