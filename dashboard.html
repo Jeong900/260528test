@@ -793,9 +793,161 @@
       $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows.join("")}</tbody></table>`;
     }
 
-    // 기간별 비교 - 모든 선그래프 통합 대용량 CSV 추출 기능 구현
+    // 기간별 비교 - 다중 달력 엑셀 연속 다운로드 기능 구현 (bgcolor 주황/황금 그라데이션)
+    function downloadPeriodCalendarsAsExcel() {
+      const metric = $("metricSelect").value;
+      const meta = metricMeta[metric];
+      const unit = $("periodUnit").value || allUnits;
+      
+      const activeFolders = selectedPeriodFolders();
+      const allDatasets = [];
+      if (isPrimaryChecked()) {
+        allDatasets.push(currentData);
+      }
+      activeFolders.forEach(f => {
+        if(compareDataMap[f]) allDatasets.push(compareDataMap[f]);
+      });
+      allDatasets.sort((a, b) => a.folder.localeCompare(b.folder));
+
+      if (allDatasets.length === 0) {
+        showError("다운로드할 비교월 데이터가 선택되지 않았습니다.");
+        return;
+      }
+
+      // 엑셀 렌더링 파서 100% 호환 주황/황금 그라데이션 Hex 변환기
+      function excelHeatColor(val, valMin, valMax) {
+        const range = valMax - valMin;
+        let n = range > 0 ? (val - valMin) / range : 0.5;
+        n = Math.pow(n, 1.25);
+        
+        // 최소값 연한 미색 골드 (#fffdeb) ➔ 최대값 부드러운 오렌지살구색 (#ffd8a8)
+        const rS = 255, gS = 253, bS = 235;
+        const rE = 255, gE = 216, bE = 168;
+        
+        const r = Math.round(rS + (rE - rS) * n);
+        const g = Math.round(gS + (gE - gS) * n);
+        const b = Math.round(bS + (bE - bS) * n);
+        
+        const toHex = c => c.toString(16).padStart(2, "0");
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+      }
+
+      // 각 데이터셋별로 순차 다운로드 트리거
+      allDatasets.forEach((data, dIdx) => {
+        const daysInSelRange = daysInPeriod(data);
+        const vals = daysInSelRange.map(d => value(d, unit, metric)).filter(v => v !== null);
+        const min = vals.length ? Math.min(...vals) : 0;
+        const max = vals.length ? Math.max(...vals) : 0;
+
+        let html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+        <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+        <style>
+          table { border-collapse: collapse; font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif; }
+          td, th { border: 0.5pt solid #b0b8c6; text-align: center; vertical-align: middle; }
+          th { background-color: #f1f5f9; font-weight: bold; height: 32px; font-size: 13px; color: #334155; }
+          .day-num { height: 22px; font-size: 11px; font-weight: bold; color: #475569; background-color: #f8fafc; }
+          .day-val { height: 38px; font-size: 14px; font-weight: bold; font-variant-numeric: tabular-nums; }
+          .empty-cell { background-color: #f8fafc; }
+          .no-file { color: #dc2626; font-size: 11px; background-color: #fef2f2; }
+          .out-range { opacity: 0.35; color: #94a3b8; background-color: #f1f5f9; }
+        </style>
+        </head>
+        <body>
+          <h3>DS부문 기부 현황 - 기간별 비교 달력 [${data.monthLabel}]</h3>
+          <p><b>분석 시점:</b> ${data.monthLabel} &nbsp;|&nbsp; <b>선택 사업부:</b> ${unit} &nbsp;|&nbsp; <b>출력 지표:</b> ${meta.label}</p>
+          <p><b>설정 비교 범위:</b> ${$("periodStartDay").value}일 ~ ${$("periodEndDay").value}일</p>
+          <br/>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 110px;">일</th>
+                <th style="width: 110px;">월</th>
+                <th style="width: 110px;">화</th>
+                <th style="width: 110px;">수</th>
+                <th style="width: 110px;">목</th>
+                <th style="width: 110px;">금</th>
+                <th style="width: 110px;">토</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        const firstDay = data.calendar[0];
+        const startOffset = firstDay.weekday;
+        
+        let weekNums = [];
+        let weekVals = [];
+        
+        for (let i = 0; i < startOffset; i++) {
+          weekNums.push(`<td class="day-num empty-cell"></td>`);
+          weekVals.push(`<td class="day-val empty-cell"></td>`);
+        }
+
+        data.calendar.forEach((d, idx) => {
+          const inRange = inPeriodRange(d);
+          weekNums.push(`<td class="day-num">${d.day}</td>`);
+          
+          if (!inRange) {
+            // 설정 범위를 벗어난 날짜는 엑셀에서도 반투명 회색 처리!
+            weekVals.push(`<td class="day-val out-range">-</td>`);
+          } else {
+            const v = value(d, unit, metric);
+            if (v === null) {
+              weekVals.push(`<td class="day-val no-file">파일 없음</td>`);
+            } else {
+              const bgColor = excelHeatColor(v, min, max);
+              weekVals.push(`<td class="day-val" bgcolor="${bgColor}" style="color: #0f172a; font-weight: bold;">${fmt.format(v)}</td>`);
+            }
+          }
+
+          if (weekNums.length === 7 || idx === data.calendar.length - 1) {
+            while (weekNums.length < 7) {
+              weekNums.push(`<td class="day-num empty-cell"></td>`);
+              weekVals.push(`<td class="day-val empty-cell"></td>`);
+            }
+            
+            html += `<tr>${weekNums.join("")}</tr>`;
+            html += `<tr>${weekVals.join("")}</tr>`;
+            
+            weekNums = [];
+            weekVals = [];
+          }
+        });
+
+        html += `
+            </tbody>
+          </table>
+        </body>
+        </html>
+        `;
+
+        // 250ms의 스마트 간격을 주어 연속 다운로드 보장!
+        setTimeout(() => {
+          const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `${data.folder}_기간비교달력_${unit}_${meta.label}.xls`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }, dIdx * 250);
+      });
+    }
+
+    // 기간별 비교 메인 다운로드 컨트롤러 (보기 형식에 따라 지능형 자동 분기)
     function periodDownload() {
       if(!currentData) return;
+      const viewType = $("periodViewType").value;
+      if (viewType === "calendar") {
+        downloadPeriodCalendarsAsExcel();
+      } else {
+        downloadPeriodTableAsCSV();
+      }
+    }
+
+    // 기존 통합 표 데이터 CSV 다운로드 로직 백업
+    function downloadPeriodTableAsCSV() {
       const unit = $("periodUnit").value || allUnits;
       const days = daysInPeriod(currentData);
       const activeFolders = selectedPeriodFolders();
