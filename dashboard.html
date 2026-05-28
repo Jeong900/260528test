@@ -385,6 +385,24 @@
       const min = vals.length ? Math.min(...vals) : 0;
       const max = vals.length ? Math.max(...vals) : 0;
 
+      // 엑셀 전용 RGB Hex 색상 매핑 함수 (엑셀 렌더링 파서 100% 호환 주황/황금 그라데이션)
+      function excelHeatColor(val, valMin, valMax) {
+        const range = valMax - valMin;
+        let n = range > 0 ? (val - valMin) / range : 0.5;
+        n = Math.pow(n, 1.25);
+        
+        // 최소값 연한 미색 골드 (#fffdeb) ➔ 최대값 선명한 주황색 (#ff922b)
+        const rS = 255, gS = 253, bS = 235;
+        const rE = 255, gE = 146, bE = 43;
+        
+        const r = Math.round(rS + (rE - rS) * n);
+        const g = Math.round(gS + (gE - gS) * n);
+        const b = Math.round(bS + (bE - bS) * n);
+        
+        const toHex = c => c.toString(16).padStart(2, "0");
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+      }
+
       let html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head>
@@ -440,8 +458,8 @@
         if (v === null) {
           weekVals.push(`<td class="day-val no-file">파일 없음</td>`);
         } else {
-          // 대시보드와 100% 싱크되는 골드/주황 HSL 그라데이션을 엑셀이 완벽 지원하는 background-color 단일 색상 속성으로 복구!
-          const bgColor = heatColor(v, min, max);
+          // 대시보드와 100% 싱크되는 골드/주황 색상을 엑셀이 완벽 인지하는 RGB Hex 단일 속성으로 렌더링!
+          const bgColor = excelHeatColor(v, min, max);
           weekVals.push(`<td class="day-val" style="background-color: ${bgColor}; color: #0f172a; font-weight: bold;">${fmt.format(v)}</td>`);
         }
 
