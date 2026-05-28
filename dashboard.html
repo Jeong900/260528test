@@ -57,7 +57,10 @@
           <div class="card">
             <div class="head">
               <div><h3>사업부별 비교</h3><div class="status">체크한 사업부 기준 선그래프</div></div>
-              <button id="businessDownload">Excel 다운로드</button>
+              <div style="display:flex; gap:8px;">
+                <button class="secondary" id="businessImageDownload">이미지 저장</button>
+                <button id="businessDownload">Excel 다운로드</button>
+              </div>
             </div>
             <div class="section">
               <div class="row">
@@ -84,7 +87,10 @@
           <div class="card">
             <div class="head">
               <div><h3>기간별 비교</h3><div class="status" id="periodStatus">비교할 월 폴더를 추가해 주세요.</div></div>
-              <label class="file-button" id="compareOpenBtn" for="compareInput">비교월 폴더 추가</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="secondary" id="periodImageDownload">이미지 저장</button>
+                <label class="file-button" id="compareOpenBtn" for="compareInput">비교월 폴더 추가</label>
+              </div>
             </div>
             <div class="section">
               <div class="row">
@@ -397,7 +403,7 @@
       a.href=URL.createObjectURL(blob); a.download=`${currentData.folder}_사업부별비교.csv`; a.click(); URL.revokeObjectURL(a.href);
     }
     
-    // 다중 비교월 리스트 컨트롤 렌더링
+    // 다중 비교월 리스트 컨트롤 렌더링 (기준 연월도 기본 활성화 상태의 체크박스로 노출)
     function renderPeriodControls() {
       if (!currentData) return;
       const folders = Object.keys(compareDataMap).sort();
@@ -583,10 +589,12 @@
       if (viewType === "chart") {
         $("periodChartsContainer").style.display = "block";
         $("periodCalendarsContainer").style.display = "none";
+        $("periodImageDownload").style.display = "inline-flex";
         drawPeriodCharts();
       } else {
         $("periodChartsContainer").style.display = "none";
         $("periodCalendarsContainer").style.display = "flex";
+        $("periodImageDownload").style.display = "none";
         renderPeriodCalendars();
       }
 
@@ -621,7 +629,7 @@
         return `<tr><td>${data.monthLabel}</td>${cells}</tr>`;
       }).join("");
 
-      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows.join("")}</tbody></table>`;
     }
 
     // 기간별 비교 - 모든 선그래프 통합 대용량 CSV 추출 기능 구현
@@ -632,7 +640,6 @@
       const activeFolders = selectedPeriodFolders();
       const showPrimary = isPrimaryChecked();
 
-      // 헤더 첫 열은 지정 사업부 이름 적용
       const head = `"${unit}",${days.map(d => `"${d.day}일"`).join(",")}`;
       
       const allDatasets = [];
@@ -646,7 +653,6 @@
 
       const rows = [];
       allDatasets.forEach(data => {
-        // 사용자가 기간별 비교 페이지에서 보고 있는 3개 그래프(참여인원, 기부금액, 평균 기부액)의 모든 연월별 데이터를 한 번에 추출
         ["participants", "amount", "average"].forEach(m => {
           const mLabel = metricMeta[m].label;
           const vals = days.map(d => {
@@ -666,9 +672,54 @@
       URL.revokeObjectURL(a.href);
     }
 
+    // SVG 차트를 고해상도 PNG 이미지로 저장하는 유틸리티 함수
+    function downloadChartAsPNG(svgElement, fileName) {
+      const serializer = new XMLSerializer();
+      const clone = svgElement.cloneNode(true);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      
+      // 배경을 하얗게 채우는 사각형 추가 (배경 투명 방지)
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("width", "100%");
+      rect.setAttribute("height", "100%");
+      rect.setAttribute("fill", "#ffffff");
+      clone.insertBefore(rect, clone.firstChild);
+      
+      // 외부 리소스 파일 없이도 스타일이 온전히 유지되도록 inline CSS 주입
+      const style = document.createElement("style");
+      style.textContent = `
+        line { stroke: #e8ecf2; }
+        polyline { stroke-width: 2.4; fill: none; }
+        text { font-family: "Segoe UI", "Malgun Gothic", sans-serif; }
+      `;
+      clone.insertBefore(style, clone.firstChild);
+
+      const svgString = serializer.serializeToString(clone);
+      const svgBlob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+      const url = URL.createObjectURL(svgBlob);
+      
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        // 고품질 차트 이미지 생성을 위해 2배 고해상도로 캔버스 스케일링 설정 (1800x600)
+        canvas.width = 1800;
+        canvas.height = 600;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, 1800, 600);
+        
+        const pngUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.download = fileName;
+        a.href = pngUrl;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
     function renderAll(){ if(!currentData) return; renderCalendar(); renderBusiness(); renderPeriod(); }
     function showDashboard(data){
-      currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · cache 사용":""}`;
+      currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · 캐시 사용":""}`;
       $("unitSelect").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("periodUnit").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("unitSelect").value=allUnits; $("periodUnit").value=allUnits; setRangeInputs(data); renderBusinessControls();
       
       populatePeriodDays();
@@ -685,6 +736,24 @@
     $("businessDownload").addEventListener("click",csvDownload);
     $("calendarDownload").addEventListener("click",calendarDownload);
     $("periodDownload").addEventListener("click",periodDownload);
+
+    // 이미지 저장 버튼 클릭 리스너 연동
+    $("businessImageDownload").addEventListener("click", () => {
+      if(!currentData) return;
+      downloadChartAsPNG($("businessChart"), `${currentData.folder}_사업부별비교_그래프.png`);
+    });
+
+    $("periodImageDownload").addEventListener("click", () => {
+      if(!currentData) return;
+      // 3개 비교 차트 동시 다운로드 트리거
+      downloadChartAsPNG($("periodParticipants"), `${currentData.folder}_기간비교_참여인원_그래프.png`);
+      setTimeout(() => {
+        downloadChartAsPNG($("periodAmount"), `${currentData.folder}_기간비교_기부금액_그래프.png`);
+      }, 150);
+      setTimeout(() => {
+        downloadChartAsPNG($("periodAverage"), `${currentData.folder}_기간비교_평균기부액_그래프.png`);
+      }, 300);
+    });
     
     // 사업부 선택 동기화 연동 처리
     $("unitSelect").addEventListener("change", () => {
