@@ -361,18 +361,49 @@
     }
     function fitValues(){ document.querySelectorAll(".value strong").forEach(n=>{ n.style.fontSize=""; let s=parseFloat(getComputedStyle(n).fontSize); while(n.scrollWidth>n.clientWidth && s>12){ s-=1; n.style.fontSize=`${s}px`; } }); }
     
-    // 달력 렌더링
+    // 달력 렌더링 (대시보드 웹 화면도 주황 데이터 막대 그라데이션 채우기 전격 적용)
     function renderCalendar(){
       const unit=$("unitSelect").value, metric=$("metricSelect").value, meta=metricMeta[metric];
       $("calendarLabel").textContent = `${unit} · ${meta.label}`;
       $("calendar").innerHTML = "";
       const vals=currentData.calendar.map(d=>value(d,unit,metric)).filter(v=>v!=null), min=vals.length?Math.min(...vals):0, max=vals.length?Math.max(...vals):0;
-      for(let i=0;i<currentData.calendar[0].weekday;i++) $("calendar").insertAdjacentHTML("beforeend", `<div class="day empty"></div>`);
-      currentData.calendar.forEach(d=>{ const v=value(d,unit,metric), heat=v==null?"":`style="--heat:${heatColor(v,min,max)}"`, body=v==null?"-":format(v); $("calendar").insertAdjacentHTML("beforeend", `<div class="day ${v==null?"":"has-data"}" ${heat}><div class="day-top"><div class="day-no">${d.day}</div><span class="badge ${v==null?"no":"ok"}">${v==null?"파일 없음":"반영"}</span></div><div class="value"><span>${meta.label}</span><strong>${body}</strong></div></div>`); });
+      
+      for(let i=0;i<currentData.calendar[0].weekday;i++) {
+        $("calendar").insertAdjacentHTML("beforeend", `<div class="day empty"></div>`);
+      }
+      
+      currentData.calendar.forEach(d=>{
+        const v=value(d,unit,metric);
+        const body=v==null?"-":format(v);
+        
+        let cardStyle = "";
+        let hasDataClass = "";
+        
+        if (v !== null) {
+          hasDataClass = "has-data";
+          const pct = max > 0 ? Math.round((v / max) * 94) + 6 : 0;
+          const barColorStart = "#ff922b"; 
+          const barColorEnd = "#ffe8cc";   
+          cardStyle = `style="background: linear-gradient(to right, ${barColorStart} 0%, ${barColorEnd} ${pct}%, #ffffff ${pct}%, #ffffff 100%); border-color: #ffd8a8;"`;
+        }
+        
+        $("calendar").insertAdjacentHTML("beforeend", `
+          <div class="day ${hasDataClass}" ${cardStyle}>
+            <div class="day-top">
+              <div class="day-no" style="font-weight: 700;">${d.day}</div>
+              <span class="badge ${v==null?"no":"ok"}">${v==null?"파일 없음":"반영"}</span>
+            </div>
+            <div class="value">
+              <span style="color: #64748b; font-size: 11px;">${meta.label}</span>
+              <strong style="color: #0f172a; font-weight: 800;">${body}</strong>
+            </div>
+          </div>
+        `);
+      });
       requestAnimationFrame(fitValues);
     }
     
-    // 달력 현황 엑셀 다운로드 (엑셀 호환 HTML 테이블 서식 및 대시보드 그라데이션 열지도 복제)
+    // 달력 현황 엑셀 다운로드 (주황 데이터 막대 그라데이션 채우기 서식 적용)
     function calendarDownload() {
       if(!currentData) return;
       const unit = $("unitSelect").value || allUnits;
@@ -380,28 +411,9 @@
       const meta = metricMeta[metric];
       const days = currentData.calendar;
       
-      // 달력 내 데이터 범위 추출 및 그라데이션 최소/최대 설정
       const vals = days.map(d => value(d, unit, metric)).filter(v => v !== null);
       const min = vals.length ? Math.min(...vals) : 0;
       const max = vals.length ? Math.max(...vals) : 0;
-
-      // 엑셀 전용 RGB Hex 색상 매핑 함수 (엑셀 렌더링 파서 100% 호환 주황/황금 그라데이션)
-      function excelHeatColor(val, valMin, valMax) {
-        const range = valMax - valMin;
-        let n = range > 0 ? (val - valMin) / range : 0.5;
-        n = Math.pow(n, 1.25);
-        
-        // 최소값 연한 미색 골드 (#fffdeb) ➔ 최대값 선명한 주황색 (#ff922b)
-        const rS = 255, gS = 253, bS = 235;
-        const rE = 255, gE = 146, bE = 43;
-        
-        const r = Math.round(rS + (rE - rS) * n);
-        const g = Math.round(gS + (gE - gS) * n);
-        const b = Math.round(bS + (bE - bS) * n);
-        
-        const toHex = c => c.toString(16).padStart(2, "0");
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-      }
 
       let html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -442,7 +454,6 @@
       let weekNums = [];
       let weekVals = [];
       
-      // 첫 주 시작 전의 요일 공간 빈 칸 채우기
       for (let i = 0; i < startOffset; i++) {
         weekNums.push(`<td class="day-num empty-cell"></td>`);
         weekVals.push(`<td class="day-val empty-cell"></td>`);
@@ -450,20 +461,25 @@
 
       days.forEach((d, idx) => {
         const v = value(d, unit, metric);
-        
-        // 일자 번호 렌더링
         weekNums.push(`<td class="day-num">${d.day}</td>`);
         
-        // 지표 데이터 렌더링 및 조건부 서식(주황/황금 그라데이션 배경색) 적용
         if (v === null) {
           weekVals.push(`<td class="day-val no-file">파일 없음</td>`);
         } else {
-          // 대시보드와 100% 싱크되는 골드/주황 색상을 엑셀이 완벽 인지하는 RGB Hex 단일 속성으로 렌더링!
-          const bgColor = excelHeatColor(v, min, max);
-          weekVals.push(`<td class="day-val" style="background-color: ${bgColor}; color: #0f172a; font-weight: bold;">${fmt.format(v)}</td>`);
+          // 데이터 크기 비례 채우기 비율 (최대값 대비 백분율)
+          const pct = max > 0 ? Math.round((v / max) * 94) + 6 : 0; 
+          const barColorStart = "#ff922b"; 
+          const barColorEnd = "#ffe8cc";   
+          
+          let gradientStyle = "";
+          if (v > 0) {
+            gradientStyle = `style="background: linear-gradient(to right, ${barColorStart} 0%, ${barColorEnd} ${pct}%, #ffffff ${pct}%, #ffffff 100%); color: #0f172a; font-weight: bold; border-color: #ffd8a8;"`;
+          } else {
+            gradientStyle = `style="background-color: #ffffff; color: #0f172a; font-weight: bold;"`;
+          }
+          weekVals.push(`<td class="day-val" ${gradientStyle}>${fmt.format(v)}</td>`);
         }
 
-        // 토요일 종료 또는 월말 도달 시 행 덤프
         if (weekNums.length === 7 || idx === days.length - 1) {
           while (weekNums.length < 7) {
             weekNums.push(`<td class="day-num empty-cell"></td>`);
