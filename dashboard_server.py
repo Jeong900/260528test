@@ -22,7 +22,7 @@ PORT = 8765
 FOLDER_RE = re.compile(r"^\d{4}$")
 FILE_RE = re.compile(r"^(\d{6})_데이터\(전체\)(?:_dummy)?\.xlsx$")
 ALL_UNITS = "DS부문 전체"
-CACHE_VERSION = 8
+CACHE_VERSION = 9
 
 ORDERED_UNITS = [
     "DS부문 전체",
@@ -40,12 +40,38 @@ ORDERED_UNITS = [
 ]
 
 def get_unit_sort_key(name: str) -> int:
+    clean_name = name.replace(" ", "")
+    
+    if "전체" in clean_name:
+        return 0
+    if "메모리" in clean_name:
+        return 1
+    if "SystemLSI" in clean_name or "시스템LSI" in clean_name or "시스템lsi" in clean_name.lower():
+        return 2
+    if "Foundry" in clean_name or "파운드리" in clean_name:
+        return 3
+    if "반도체연구소" in clean_name:
+        return 4
+    if "글로벌제조" in clean_name or "인프라" in clean_name or "글로동" in clean_name:
+        return 5
+    if "TSP" in clean_name:
+        return 6
+    if "AI" in clean_name:
+        return 7
+    if "CSS" in clean_name:
+        return 8
+    if "SAIT" in clean_name or "종기원" in clean_name:
+        return 9
+    if "경영전략" in clean_name:
+        return 10
+    if "부문직속" in clean_name:
+        return 11
+        
     for idx, ordered_name in enumerate(ORDERED_UNITS):
-        if name == ordered_name or name.replace(" ", "") == ordered_name.replace(" ", ""):
+        ordered_clean = ordered_name.replace(" ", "")
+        if ordered_clean in clean_name or clean_name in ordered_clean:
             return idx
-        if "글로동" in name or "글로벌" in name:
-            if "인프라" in name:
-                return 5
+            
     return len(ORDERED_UNITS)
 
 JOBS: dict[str, dict] = {}
