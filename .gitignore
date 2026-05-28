@@ -12,6 +12,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# PyInstaller build outputs
+build/
+dist/
+*.spec
+
 # OS generated files
 .DS_Store
 Thumbs.db

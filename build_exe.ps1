@@ -19,6 +19,10 @@ python -m PyInstaller `
   --add-data "dashboard.html;." `
   dashboard_server.py
 
+if ($LASTEXITCODE -ne 0) {
+  throw "PyInstaller build failed with exit code $LASTEXITCODE"
+}
+
 Write-Host ""
 Write-Host "Build complete: $root\dist\$Name.exe"
 Write-Host "Put YYMM data folders, such as 2605, next to the exe before running it."
