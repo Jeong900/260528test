@@ -372,25 +372,104 @@
       requestAnimationFrame(fitValues);
     }
     
-    // 달력 현황 엑셀 다운로드
+    // 달력 현황 엑셀 다운로드 (엑셀 호환 HTML 테이블 서식 및 대시보드 그라데이션 열지도 복제)
     function calendarDownload() {
       if(!currentData) return;
+      const unit = $("unitSelect").value || allUnits;
       const metric = $("metricSelect").value;
+      const meta = metricMeta[metric];
       const days = currentData.calendar;
-      const units = currentData.businessUnits;
       
-      const head = `"${metricMeta[metric].label}",${days.map(d => `"${d.day}일"`).join(",")}`;
-      const rows = units.map(u => {
-        return `"${u}",${days.map(d => {
-          const v = value(d, u, metric);
-          return v === null ? "" : v;
-        }).join(",")}`;
-      }).join("\n");
+      // 달력 내 데이터 범위 추출 및 그라데이션 최소/최대 설정
+      const vals = days.map(d => value(d, unit, metric)).filter(v => v !== null);
+      const min = vals.length ? Math.min(...vals) : 0;
+      const max = vals.length ? Math.max(...vals) : 0;
+
+      let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+      <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+      <style>
+        table { border-collapse: collapse; font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif; }
+        td, th { border: 0.5pt solid #b0b8c6; text-align: center; vertical-align: middle; }
+        th { background-color: #f1f5f9; font-weight: bold; height: 32px; font-size: 13px; color: #334155; }
+        .day-num { height: 22px; font-size: 11px; font-weight: bold; color: #475569; background-color: #f8fafc; }
+        .day-val { height: 38px; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .empty-cell { background-color: #f8fafc; }
+        .no-file { color: #dc2626; font-size: 11px; background-color: #fef2f2; }
+      </style>
+      </head>
+      <body>
+        <h3>DS부문 기부 현황 - 달력 현황</h3>
+        <p><b>분석 시점:</b> ${currentData.monthLabel} &nbsp;|&nbsp; <b>선택 사업부:</b> ${unit} &nbsp;|&nbsp; <b>출력 지표:</b> ${meta.label}</p>
+        <br/>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 110px;">일</th>
+              <th style="width: 110px;">월</th>
+              <th style="width: 110px;">화</th>
+              <th style="width: 110px;">수</th>
+              <th style="width: 110px;">목</th>
+              <th style="width: 110px;">금</th>
+              <th style="width: 110px;">토</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      const firstDay = days[0];
+      const startOffset = firstDay.weekday;
       
-      const blob = new Blob(["\ufeff" + head + "\n" + rows], {type: "text/csv;charset=utf-8"});
+      let weekNums = [];
+      let weekVals = [];
+      
+      // 첫 주 시작 전의 요일 공간 빈 칸 채우기
+      for (let i = 0; i < startOffset; i++) {
+        weekNums.push(`<td class="day-num empty-cell"></td>`);
+        weekVals.push(`<td class="day-val empty-cell"></td>`);
+      }
+
+      days.forEach((d, idx) => {
+        const v = value(d, unit, metric);
+        
+        // 일자 번호 렌더링
+        weekNums.push(`<td class="day-num">${d.day}</td>`);
+        
+        // 지표 데이터 렌더링 및 그라데이션 적용
+        if (v === null) {
+          weekVals.push(`<td class="day-val no-file">파일 없음</td>`);
+        } else {
+          const bgColor = heatColor(v, min, max);
+          weekVals.push(`<td class="day-val" style="background-color: ${bgColor}; color: #0f172a;">${fmt.format(v)}</td>`);
+        }
+
+        // 토요일 종료 또는 월말 도달 시 행 덤프
+        if (weekNums.length === 7 || idx === days.length - 1) {
+          while (weekNums.length < 7) {
+            weekNums.push(`<td class="day-num empty-cell"></td>`);
+            weekVals.push(`<td class="day-val empty-cell"></td>`);
+          }
+          
+          html += `<tr>${weekNums.join("")}</tr>`;
+          html += `<tr>${weekVals.join("")}</tr>`;
+          
+          weekNums = [];
+          weekVals = [];
+        }
+      });
+
+      html += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+      `;
+
+      const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `${currentData.folder}_달력현황_${metricMeta[metric].label}.csv`;
+      a.download = `${currentData.folder}_달력현황_${unit}_${meta.label}.xls`;
       a.click();
       URL.revokeObjectURL(a.href);
     }
