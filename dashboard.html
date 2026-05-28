@@ -938,16 +938,82 @@
     // 기간별 비교 메인 다운로드 컨트롤러 (보기 형식에 따라 지능형 자동 분기)
     function periodDownload() {
       if(!currentData) return;
-      const viewType = $("periodViewType").value;
-      if (viewType === "calendar") {
-        downloadPeriodCalendarsAsExcel();
-      } else {
-        downloadPeriodTableAsCSV();
-      }
+      downloadPeriodTableAsExcel();
     }
 
     // 기존 통합 표 데이터 CSV 다운로드 로직 백업
-    function downloadPeriodTableAsCSV() {
+    function downloadPeriodTableAsExcel() {
+      {
+        const metric = $("metricSelect").value;
+        const meta = metricMeta[metric];
+        const unit = $("periodUnit").value || allUnits;
+        const days = daysInPeriod(currentData);
+        const activeFolders = selectedPeriodFolders();
+        const showPrimary = isPrimaryChecked();
+        const allDatasets = [];
+
+        if (showPrimary) {
+          allDatasets.push(currentData);
+        }
+        activeFolders.forEach(f => {
+          if(compareDataMap[f]) allDatasets.push(compareDataMap[f]);
+        });
+        allDatasets.sort((a, b) => a.folder.localeCompare(b.folder));
+
+        if (allDatasets.length === 0) {
+          showError("다운로드할 비교 데이터가 선택되지 않았습니다.");
+          return;
+        }
+
+        const esc = text => String(text ?? "").replace(/[&<>"']/g, ch => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[ch]));
+
+        const headerCells = days.map(d => `<th class="num">${d.day}일</th>`).join("");
+        const rows = allDatasets.map(data => {
+          const cells = days.map(d => {
+            const dayObj = data.calendar[d.day - 1];
+            const v = dayObj ? value(dayObj, unit, metric) : null;
+            return `<td class="num">${v === null ? "" : fmt.format(v)}</td>`;
+          }).join("");
+          return `<tr><td>${esc(data.monthLabel)}</td>${cells}</tr>`;
+        }).join("");
+
+        const html = `
+          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+            <style>
+              table { border-collapse: collapse; font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif; }
+              th, td { border: 0.5pt solid #b0b8c6; padding: 8px 10px; text-align: right; vertical-align: middle; }
+              th { background-color: #f1f5f9; color: #334155; font-weight: bold; }
+              td:first-child, th:first-child { text-align: left; font-weight: bold; }
+              .metric-head { background-color: #fff36a; color: #111; }
+            </style>
+          </head>
+          <body>
+            <h3>기간별 비교 표</h3>
+            <p><b>사업부:</b> ${esc(unit)} &nbsp;|&nbsp; <b>지표:</b> ${esc(meta.label)} &nbsp;|&nbsp; <b>기간:</b> ${$("periodStartDay").value}일 ~ ${$("periodEndDay").value}일</p>
+            <table>
+              <thead><tr><th class="metric-head">${esc(unit)}</th>${headerCells}</tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </body>
+          </html>`;
+
+        const blob = new Blob([html], {type: "application/vnd.ms-excel;charset=utf-8"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${currentData.folder}_기간비교표_${unit}_${meta.label}.xls`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        return;
+      }
+
       const unit = $("periodUnit").value || allUnits;
       const days = daysInPeriod(currentData);
       const activeFolders = selectedPeriodFolders();
