@@ -86,6 +86,9 @@ def get_unit_sort_key(name: str) -> int:
 
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
+
+# EXE 배포판은 사용자가 브라우저를 닫아도 서버 프로세스가 남을 수 있다.
+# 프론트엔드 heartbeat와 API 요청을 활동으로 보고, 15분 유휴 시 캐시를 지운 뒤 종료한다.
 LAST_ACTIVITY = time.monotonic()
 LAST_ACTIVITY_LOCK = threading.Lock()
 
