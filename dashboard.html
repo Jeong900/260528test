@@ -436,24 +436,13 @@
         // 일자 번호 렌더링
         weekNums.push(`<td class="day-num">${d.day}</td>`);
         
-        // 지표 데이터 렌더링 및 조건부 서식(주황 데이터 막대 그라데이션 채우기) 적용
+        // 지표 데이터 렌더링 및 조건부 서식(주황/황금 그라데이션 배경색) 적용
         if (v === null) {
           weekVals.push(`<td class="day-val no-file">파일 없음</td>`);
         } else {
-          // 데이터 막대의 가로 채우기 비율 계산 (최대값 대비 백분율)
-          const pct = max > 0 ? Math.round((v / max) * 94) + 6 : 0; 
-          
-          // 엑셀 표준 주황 데이터 막대의 오렌지빛 색감 및 연한 꼬리색 재현
-          const barColorStart = "#ff922b"; 
-          const barColorEnd = "#ffe8cc";   
-          
-          let gradientStyle = "";
-          if (v > 0) {
-            gradientStyle = `style="background: linear-gradient(to right, ${barColorStart} 0%, ${barColorEnd} ${pct}%, #ffffff ${pct}%, #ffffff 100%); color: #0f172a;"`;
-          } else {
-            gradientStyle = `style="background-color: #ffffff; color: #0f172a;"`;
-          }
-          weekVals.push(`<td class="day-val" ${gradientStyle}>${fmt.format(v)}</td>`);
+          // 대시보드와 100% 싱크되는 골드/주황 HSL 그라데이션을 엑셀이 완벽 지원하는 background-color 단일 색상 속성으로 복구!
+          const bgColor = heatColor(v, min, max);
+          weekVals.push(`<td class="day-val" style="background-color: ${bgColor}; color: #0f172a; font-weight: bold;">${fmt.format(v)}</td>`);
         }
 
         // 토요일 종료 또는 월말 도달 시 행 덤프
