@@ -21,7 +21,31 @@ PORT = 8765
 FOLDER_RE = re.compile(r"^\d{4}$")
 FILE_RE = re.compile(r"^(\d{6})_데이터\(전체\)(?:_dummy)?\.xlsx$")
 ALL_UNITS = "DS부문 전체"
-CACHE_VERSION = 7
+CACHE_VERSION = 8
+
+ORDERED_UNITS = [
+    "DS부문 전체",
+    "메모리 사업부",
+    "System LSI사업부",
+    "Foundry사업부",
+    "반도체연구소",
+    "글로벌 제조&인프라총괄",
+    "TSP총괄",
+    "AI센터",
+    "CSS사업부",
+    "SAIT",
+    "경영전략담당",
+    "부문직속(DS)"
+]
+
+def get_unit_sort_key(name: str) -> int:
+    for idx, ordered_name in enumerate(ORDERED_UNITS):
+        if name == ordered_name or name.replace(" ", "") == ordered_name.replace(" ", ""):
+            return idx
+        if "글로동" in name or "글로벌" in name:
+            if "인프라" in name:
+                return 5
+    return len(ORDERED_UNITS)
 
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
@@ -256,7 +280,7 @@ def analyze_folder(folder_name: str, job_id: str | None = None) -> dict:
         "monthLabel": f"{year}년 {month}월",
         "daysInMonth": max_day,
         "fileCount": len(by_date),
-        "businessUnits": [ALL_UNITS] + sorted(unit_names),
+        "businessUnits": [ALL_UNITS] + sorted(list(unit_names), key=get_unit_sort_key),
         "calendar": days,
         "ignoredFiles": ignored_files,
         "cached": False,
