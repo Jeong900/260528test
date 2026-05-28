@@ -629,7 +629,7 @@
         return `<tr><td>${data.monthLabel}</td>${cells}</tr>`;
       }).join("");
 
-      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows.join("")}</tbody></table>`;
+      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
     }
 
     // 기간별 비교 - 모든 선그래프 통합 대용량 CSV 추출 기능 구현
