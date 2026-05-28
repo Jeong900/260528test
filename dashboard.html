@@ -745,6 +745,15 @@
       // 파일 개수 및 캐시 사용 텍스트 제거
       $("status").textContent="";
       
+      // 사업부 드롭다운 옵션 바인딩
+      const unitOptions = data.businessUnits.map(u => `<option value="${u}">${u}</option>`).join("");
+      $("unitSelect").innerHTML = unitOptions;
+      $("periodUnit").innerHTML = unitOptions;
+      
+      // 날짜 및 사업부 체크박스 초기화
+      setRangeInputs(data);
+      renderBusinessControls();
+      
       populatePeriodDays();
       
       compareDataMap = {};

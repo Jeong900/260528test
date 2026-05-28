@@ -6,6 +6,7 @@ import re
 import threading
 import uuid
 import zipfile
+import traceback
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -15,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 
-ROOT = Path(r"C:\Users\User\Desktop\0528")
+ROOT = Path(__file__).resolve().parent
 CACHE_DIR = ROOT / ".dashboard_cache"
 PORT = 8765
 FOLDER_RE = re.compile(r"^\d{4}$")
@@ -416,10 +417,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
             else:
                 self.send_error(404)
         except Exception as exc:
+            traceback.print_exc()
             self.send_json({"error": str(exc)}, status=400)
 
     def log_message(self, format: str, *args) -> None:
-        return
+        BaseHTTPRequestHandler.log_message(self, format, *args)
 
 
 def main() -> None:
