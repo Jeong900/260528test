@@ -381,7 +381,9 @@
         
         if (v !== null) {
           hasDataClass = "has-data";
-          const pct = max > 0 ? Math.round((v / max) * 94) + 6 : 0;
+          const range = max - min || 1;
+          // 데이터 강도의 격차(최소~최대)를 극적으로 벌려 다이내믹하게 차오르는 비율 스케일링 적용!
+          const pct = range > 0 ? Math.round(((v - min) / range) * 88) + 8 : 50;
           const barColorStart = "#ff922b"; 
           const barColorEnd = "#ffe8cc";   
           cardStyle = `style="background: linear-gradient(to right, ${barColorStart} 0%, ${barColorEnd} ${pct}%, #ffffff ${pct}%, #ffffff 100%); border-color: #ffd8a8;"`;
@@ -484,8 +486,9 @@
         if (v === null) {
           weekVals.push(`<td class="day-val no-file">파일 없음</td>`);
         } else {
-          // 데이터 강도에 비례해 가로로 차오르는 주황 데이터 막대 띠 비율 계산 (최대값 기준)
-          const pct = max > 0 ? Math.round((v / max) * 94) + 6 : 0; 
+          // 데이터 강도의 격차(최소~최대)를 극적으로 벌려 다이내믹하게 차오르는 엑셀 막대 비율 스케일링 적용!
+          const range = max - min || 1;
+          const pct = range > 0 ? Math.round(((v - min) / range) * 88) + 8 : 50; 
           const bgColor = excelHeatColor(v, min, max);
           
           // 엑셀 파서가 100% 무조건 그려내는 미니 막대 그래프 띠 (1행 2열 중첩 테이블)
