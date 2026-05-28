@@ -9,14 +9,16 @@
     *{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:"Segoe UI","Malgun Gothic",Arial,sans-serif}
     button,select,input,.file-button{height:38px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 10px;font:inherit;font-size:13px}
     button,.file-button{display:inline-flex;align-items:center;justify-content:center;background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700;cursor:pointer;padding:0 16px;text-decoration:none}button.secondary,.file-button.secondary{background:#fff;color:var(--ink);border-color:var(--line)}button:disabled{opacity:.55;cursor:wait}
-    .intro{min-height:100vh;display:grid;place-items:center;padding:32px}.intro-card{width:min(560px,100%);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:44px;text-align:center}.intro h1{margin:0 0 12px;font-size:28px}.intro p{color:var(--muted);line-height:1.6;margin:0 0 24px}
+    .intro{min-height:100vh;display:grid;place-items:center;padding:32px}h1,h2,h3,h4{margin:0}
+    .intro-card{width:min(560px,100%);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:44px;text-align:center}.intro h1{margin:0 0 12px;font-size:28px}.intro p{color:var(--muted);line-height:1.6;margin:0 0 24px}
     .app{display:none;min-height:100vh;grid-template-columns:236px 1fr}.side{background:var(--nav);color:#fff;padding:24px 18px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:26px}.brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:8px;background:#ffd66b;color:#111;font-weight:800}.brand h1{margin:0;font-size:20px}.brand span{font-size:12px;color:#b9c3d6}.nav{display:grid;gap:8px}.nav button{width:100%;height:40px;border:0;background:transparent;color:#fff;text-align:left;border-radius:6px;font-weight:650}.nav button.active{background:#2c3444}
     .main{padding:22px 28px 36px;min-width:0}.topbar{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;margin-bottom:18px}.title h2{margin:0 0 6px;font-size:24px}.title div{color:var(--muted);font-size:13px}.tools{display:flex;gap:10px;align-items:end;flex-wrap:wrap;justify-content:flex-end}.control{display:grid;gap:5px}.control label{font-size:11px;color:var(--muted);font-weight:700}.control select{min-width:180px}
     .page{display:none}.page.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);overflow:hidden}.head{min-height:56px;padding:14px 18px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.head h3{margin:0;font-size:16px}.status{font-size:12px;color:var(--muted);white-space:nowrap}.section{padding:16px}.grid2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}.panel{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}.panel h4{margin:0;padding:12px 14px;border-bottom:1px solid var(--line);font-size:14px}.panel-body{padding:12px 14px}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
     .weekdays,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.weekdays{background:#fbfcfe;border-bottom:1px solid var(--line)}.weekdays div{padding:10px 12px;color:var(--muted);font-size:12px;font-weight:700;text-align:center}.calendar{padding:10px;gap:8px}.day{min-height:132px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:11px;display:flex;flex-direction:column;gap:8px}.day.empty{border-color:transparent;background:transparent}.day.has-data{border-color:#e7c94f;background:linear-gradient(180deg,#fff 0%,var(--heat,#fff8cf) 100%)}.day-top{display:flex;justify-content:space-between;align-items:center}.day-no{font-size:15px;font-weight:760}.badge{border-radius:99px;padding:3px 8px;font-size:11px;font-weight:760}.badge.ok{color:#7a5a00;background:rgba(255,255,255,.62)}.badge.no{color:var(--red);background:#fff1f0}.value{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.value span{color:var(--muted);font-size:12px;margin-bottom:6px}.value strong{font-size:clamp(15px,1.55vw,24px);font-weight:780;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;max-width:100%}
-    .chart{width:100%;height:300px;display:block}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:10px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.checks{display:grid;gap:8px;max-height:260px;overflow:auto}.checks label{display:flex;gap:8px;align-items:center;font-size:13px}.checks input{width:16px;height:16px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}th,td{padding:9px 8px;border:1px solid #e6e9ef;text-align:left}th{background:#fbfcfe;color:var(--muted);font-weight:700}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.metric-head{background:#fff36a;color:#111}
+    .chart{width:100%;height:300px;display:block}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:10px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.checks{display:grid;gap:8px;max-height:260px;overflow:auto}.checks label{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}.checks input{width:16px;height:16px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}th,td{padding:9px 8px;border:1px solid #e6e9ef;text-align:left}th{background:#fbfcfe;color:var(--muted);font-weight:700}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.metric-head{background:#fff36a;color:#111}
     .period-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.error{display:none;margin-top:16px;border:1px solid #f3b2b2;background:#fff4f4;color:#9d1c1c;border-radius:8px;padding:12px 14px;font-size:13px}.loading{position:fixed;inset:0;background:rgba(238,241,245,.88);display:none;place-items:center;z-index:10}.loading-card{width:min(440px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:24px}.loading-title{font-size:18px;font-weight:760;margin-bottom:8px}.loading-note{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:18px}.progress{height:8px;background:#edf0f5;border-radius:999px;overflow:hidden}.progress-bar{height:100%;width:8%;background:var(--blue);transition:width .25s ease}.progress-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-top:10px}.current-file{margin-top:12px;color:var(--ink);font-size:12px;overflow-wrap:anywhere}
     input[type=file].hidden{position:fixed;left:-9999px;width:1px;height:1px;opacity:0}
+    #chartTooltip{position:absolute;display:none;background:rgba(15,23,42,0.95);color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;pointer-events:none;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.15);line-height:1.4;transition:opacity 0.15s ease}
     @media(max-width:1100px){.app{grid-template-columns:1fr}.grid2,.period-grid{grid-template-columns:1fr}.topbar{grid-template-columns:1fr}.tools{justify-content:flex-start}}@media(max-width:720px){.main{padding:16px}.weekdays{display:none}.calendar{grid-template-columns:1fr}.tools,.row{display:grid}.control,.control select,button,input{width:100%}}
   </style>
 </head>
@@ -24,22 +26,112 @@
   <section class="intro" id="intro"><div class="intro-card"><h1>DS부문 기부 대시보드</h1><p>분석하고자 하는 월별 폴더를 선택해 주세요. 대용량 파일은 진행률을 표시하고, 한 번 분석한 결과는 캐시합니다.</p><label class="file-button" id="openBtn" for="folderInput">Open</label></div></section>
   <section class="app" id="app">
     <aside class="side"><div class="brand"><div class="brand-mark">DS</div><div><h1>기부 현황</h1><span>Monthly Dashboard</span></div></div><nav class="nav"><button class="active" data-page="calendarPage">달력 현황</button><button data-page="businessPage">사업부별 비교</button><button data-page="periodPage">기간별 비교</button></nav></aside>
-    <main class="main"><div class="topbar"><div class="title"><h2 id="title">달력 현황</h2><div id="subtitle">-</div></div><div class="tools"><div class="control"><label>사업부</label><select id="unitSelect"></select></div><div class="control"><label>표시 지표</label><select id="metricSelect"><option value="participants">참여인원</option><option value="amount">기부금액</option><option value="average">평균 기부액</option></select></div><label class="file-button secondary" id="changeBtn" for="folderInput">Open</label></div></div>
-      <section class="page active" id="calendarPage"><div class="card"><div class="head"><div><h3 id="calendarTitle">달력</h3><div class="status" id="status">대기</div></div><div class="status" id="calendarLabel">DS부문 전체 · 참여인원</div></div><div class="weekdays"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div><div class="calendar" id="calendar"></div></div></section>
-      <section class="page" id="businessPage"><div class="grid2"><div class="card"><div class="head"><div><h3>사업부별 비교</h3><div class="status">체크한 사업부 기준 선그래프</div></div><button id="businessDownload">Excel 다운로드</button></div><div class="section"><div class="row"><div class="control"><label>시작일</label><input type="date" id="bizStart"></div><div class="control"><label>종료일</label><input type="date" id="bizEnd"></div></div><svg class="chart" id="businessChart"></svg><div class="legend" id="businessLegend"></div></div></div><div class="panel"><h4>사업부 선택</h4><div class="panel-body"><div class="checks" id="businessChecks"></div></div></div></div><div class="card" style="margin-top:16px"><div class="table-wrap" id="businessTable"></div></div></section>
-      <section class="page" id="periodPage"><div class="card"><div class="head"><div><h3>기간별 비교</h3><div class="status" id="periodStatus">비교할 월 폴더를 추가로 선택해 주세요.</div></div><label class="file-button" id="compareOpenBtn" for="compareInput">비교 월 Open</label></div><div class="section"><div class="row"><div class="control"><label>사업부</label><select id="periodUnit"></select></div><div class="control"><label>시작일</label><input type="date" id="periodStart"></div><div class="control"><label>종료일</label><input type="date" id="periodEnd"></div></div><div class="period-grid"><div class="panel"><h4>참여인원</h4><svg class="chart" id="periodParticipants"></svg></div><div class="panel"><h4>기부금액</h4><svg class="chart" id="periodAmount"></svg></div><div class="panel"><h4>평균 기부액</h4><svg class="chart" id="periodAverage"></svg></div></div></div></div></section>
+    <main class="main">
+      <div class="topbar">
+        <div class="title"><h2 id="title">달력 현황</h2><div id="subtitle">-</div></div>
+        <div class="tools">
+          <div class="control"><label>사업부</label><select id="unitSelect"></select></div>
+          <div class="control"><label>표시 지표</label><select id="metricSelect"><option value="participants">참여인원</option><option value="amount">기부금액</option><option value="average">평균 기부액</option></select></div>
+          <label class="file-button secondary" id="changeBtn" for="folderInput">Open</label>
+        </div>
+      </div>
+      
+      <!-- 달력 현황 탭 -->
+      <section class="page active" id="calendarPage">
+        <div class="card">
+          <div class="head">
+            <div><h3 id="calendarTitle">달력</h3><div class="status" id="status">대기</div></div>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div class="status" id="calendarLabel">DS부문 전체 · 참여인원</div>
+              <button id="calendarDownload">Excel 다운로드</button>
+            </div>
+          </div>
+          <div class="weekdays"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+          <div class="calendar" id="calendar"></div>
+        </div>
+      </section>
+      
+      <!-- 사업부별 비교 탭 -->
+      <section class="page" id="businessPage">
+        <div class="grid2">
+          <div class="card">
+            <div class="head">
+              <div><h3>사업부별 비교</h3><div class="status">체크한 사업부 기준 선그래프</div></div>
+              <button id="businessDownload">Excel 다운로드</button>
+            </div>
+            <div class="section">
+              <div class="row">
+                <div class="control"><label>시작일</label><input type="date" id="bizStart"></div>
+                <div class="control"><label>종료일</label><input type="date" id="bizEnd"></div>
+              </div>
+              <svg class="chart" id="businessChart"></svg>
+              <div class="legend" id="businessLegend"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h4>사업부 선택</h4>
+            <div class="panel-body"><div class="checks" id="businessChecks"></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="table-wrap" id="businessTable"></div>
+        </div>
+      </section>
+      
+      <!-- 기간별 비교 탭 (다중 비교 지원) -->
+      <section class="page" id="periodPage">
+        <div class="grid2">
+          <div class="card">
+            <div class="head">
+              <div><h3>기간별 비교</h3><div class="status" id="periodStatus">비교할 월 폴더를 추가해 주세요.</div></div>
+              <label class="file-button" id="compareOpenBtn" for="compareInput">비교 월 추가</label>
+            </div>
+            <div class="section">
+              <div class="row">
+                <div class="control"><label>사업부</label><select id="periodUnit"></select></div>
+                <div class="control"><label>시작일</label><input type="date" id="periodStart"></div>
+                <div class="control"><label>종료일</label><input type="date" id="periodEnd"></div>
+              </div>
+              <div class="period-grid">
+                <div class="panel"><h4>참여인원</h4><svg class="chart" id="periodParticipants"></svg></div>
+                <div class="panel"><h4>기부금액</h4><svg class="chart" id="periodAmount"></svg></div>
+                <div class="panel"><h4>평균 기부액</h4><svg class="chart" id="periodAverage"></svg></div>
+              </div>
+              <div class="legend" id="periodLegend" style="margin-top: 14px;"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h4>비교 연월 선택</h4>
+            <div class="panel-body"><div class="checks" id="periodChecks"></div></div>
+          </div>
+        </div>
+        
+        <!-- 기간별 비교 표 및 엑셀 다운로드 (새로 구현) -->
+        <div class="card" style="margin-top:16px">
+          <div class="head">
+            <div><h3>기간별 비교 표</h3><div class="status">선택한 사업부 및 지표 기준 데이터</div></div>
+            <button id="periodDownload">Excel 다운로드</button>
+          </div>
+          <div class="table-wrap" id="periodTable"></div>
+        </div>
+      </section>
+      
       <div class="error" id="errorBox"></div>
     </main>
   </section>
   <div class="loading" id="loading"><div class="loading-card"><div class="loading-title">로딩중입니다</div><div class="loading-note">선택한 월별 데이터를 읽고 있습니다. 대용량 파일은 잠시 시간이 걸릴 수 있습니다.</div><div class="progress"><div class="progress-bar" id="progressBar"></div></div><div class="progress-meta"><span id="progressText">준비 중</span><span id="progressPct">0%</span></div><div class="current-file" id="currentFile">분석 준비 중</div></div></div>
-  <input id="folderInput" class="hidden" type="file" webkitdirectory directory multiple><input id="compareInput" class="hidden" type="file" webkitdirectory directory multiple>
+  
+  <input id="folderInput" class="hidden" type="file" webkitdirectory directory multiple>
+  <input id="compareInput" class="hidden" type="file" webkitdirectory directory multiple>
+  <div id="chartTooltip"></div>
+
   <script>
     const $ = id => document.getElementById(id);
     const fmt = new Intl.NumberFormat("ko-KR");
     const allUnits = "DS부문 전체";
     const colors = ["#1428a0","#0b755d","#9c6b00","#7f56d9","#b42318","#0077b6","#475467","#c2410c"];
     let currentData = null;
-    let compareData = null;
+    let compareDataMap = {}; // key: folderName (YYMM), value: analyzed data (다중 월 누적 보관)
     const metricMeta = {
       participants: { label: "참여인원", suffix: "명" },
       amount: { label: "기부금액", suffix: "원" },
@@ -94,6 +186,16 @@
       return day.day >= Math.min(s,e) && day.day <= Math.max(s,e);
     }
     function daysIn(data, startId, endId){ return data.calendar.filter(d => inRange(d, startId, endId)); }
+    
+    // 차트 인터랙티브 툴팁 노출 위치 제어 함수 (Task 3)
+    function updateTooltipPos(e) {
+      const tooltip = $("chartTooltip");
+      const offset = 15;
+      tooltip.style.left = `${e.pageX + offset}px`;
+      tooltip.style.top = `${e.pageY - tooltip.offsetHeight / 2}px`;
+    }
+
+    // 반응형 라인 차트 및 인터랙티브 툴팁 구현 (Task 3)
     function lineChart(svg, series, labels){
       const w=900,h=300,p={l:58,r:18,t:18,b:34};
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
@@ -104,10 +206,54 @@
       const sy = v => h - p.b - ((v-min)/range) * (h-p.t-p.b);
       for(let i=0;i<5;i++){ const y=p.t+i*(h-p.t-p.b)/4; svg.insertAdjacentHTML("beforeend", `<line x1="${p.l}" y1="${y}" x2="${w-p.r}" y2="${y}" stroke="#e8ecf2"/><text x="8" y="${y+4}" font-size="11" fill="#687386">${format(Math.round(max-range*i/4))}</text>`); }
       labels.forEach((l,i)=>{ if(i%5===0 || i===n-1) svg.insertAdjacentHTML("beforeend", `<text x="${sx(i)}" y="${h-10}" text-anchor="middle" font-size="11" fill="#687386">${l}</text>`); });
-      series.forEach((s,si)=>{ const pts=s.values.map((v,i)=>v==null?null:[sx(i),sy(v)]).filter(Boolean); if(pts.length>1) svg.insertAdjacentHTML("beforeend", `<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="${s.color||colors[si%colors.length]}" stroke-width="2.4"/>`); pts.forEach(pt=>svg.insertAdjacentHTML("beforeend", `<circle cx="${pt[0]}" cy="${pt[1]}" r="2.6" fill="${s.color||colors[si%colors.length]}"/>`)); });
+      
+      series.forEach((s,si)=>{ 
+        const pts=s.values.map((v,i)=>v==null?null:[sx(i),sy(v)]).filter(Boolean); 
+        if(pts.length>1) {
+          const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+          polyline.setAttribute("points", pts.map(p=>p.join(",")).join(" "));
+          polyline.setAttribute("fill", "none");
+          polyline.setAttribute("stroke", s.color||colors[si%colors.length]);
+          polyline.setAttribute("stroke-width", "2.4");
+          svg.appendChild(polyline);
+        }
+
+        const metric = $("metricSelect").value;
+        const suffix = metricMeta[metric]?.suffix || "";
+
+        // 개별 데이터 포인트 원 엘리먼트 추가 및 호버 이벤트 연결
+        s.values.forEach((v, i) => {
+          if (v == null) return;
+          const cx = sx(i);
+          const cy = sy(v);
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", cx);
+          circle.setAttribute("cy", cy);
+          circle.setAttribute("r", "4");
+          circle.setAttribute("fill", s.color||colors[si%colors.length]);
+          circle.setAttribute("style", "cursor: pointer; transition: r 0.1s ease;");
+
+          circle.addEventListener("mouseenter", (e) => {
+            circle.setAttribute("r", "7");
+            const tooltip = $("chartTooltip");
+            const valStr = format(v) + suffix;
+            tooltip.innerHTML = `<strong>${s.name}</strong><br/>${labels[i]}일: ${valStr}`;
+            tooltip.style.display = "block";
+            updateTooltipPos(e);
+          });
+          circle.addEventListener("mousemove", updateTooltipPos);
+          circle.addEventListener("mouseleave", () => {
+            circle.setAttribute("r", "4");
+            $("chartTooltip").style.display = "none";
+          });
+          svg.appendChild(circle);
+        });
+      });
     }
     function heatColor(v,min,max){ const r=max-min,n=r>0?(v-min)/r:.45; return `hsl(48 ${82+Math.round(n*13)}% ${97-Math.round(n*25)}%)`; }
     function fitValues(){ document.querySelectorAll(".value strong").forEach(n=>{ n.style.fontSize=""; let s=parseFloat(getComputedStyle(n).fontSize); while(n.scrollWidth>n.clientWidth && s>12){ s-=1; n.style.fontSize=`${s}px`; } }); }
+    
+    // 달력 렌더링
     function renderCalendar(){
       const unit=$("unitSelect").value, metric=$("metricSelect").value, meta=metricMeta[metric];
       $("calendarLabel").textContent = `${unit} · ${meta.label}`;
@@ -117,9 +263,41 @@
       currentData.calendar.forEach(d=>{ const v=value(d,unit,metric), heat=v==null?"":`style="--heat:${heatColor(v,min,max)}"`, body=v==null?"-":format(v); $("calendar").insertAdjacentHTML("beforeend", `<div class="day ${v==null?"":"has-data"}" ${heat}><div class="day-top"><div class="day-no">${d.day}</div><span class="badge ${v==null?"no":"ok"}">${v==null?"파일 없음":"반영"}</span></div><div class="value"><span>${meta.label}</span><strong>${body}</strong></div></div>`); });
       requestAnimationFrame(fitValues);
     }
+    
+    // 달력 현황 엑셀 다운로드 (Task 4)
+    function calendarDownload() {
+      if(!currentData) return;
+      const metric = $("metricSelect").value;
+      const days = currentData.calendar;
+      const units = currentData.businessUnits;
+      
+      const head = `"${metricMeta[metric].label}",${days.map(d => `"${d.day}일"`).join(",")}`;
+      const rows = units.map(u => {
+        return `"${u}",${days.map(d => {
+          const v = value(d, u, metric);
+          return v === null ? "" : v;
+        }).join(",")}`;
+      }).join("\n");
+      
+      const blob = new Blob(["\ufeff" + head + "\n" + rows], {type: "text/csv;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${currentData.folder}_달력현황_${metricMeta[metric].label}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // 사업부 선택 컨트롤 바인딩 및 상하 양방향 동기화 구현 (Task 2)
     function renderBusinessControls(){
       $("businessChecks").innerHTML = currentData.businessUnits.map((u,i)=>`<label><input type="checkbox" value="${u}" ${i===0?"checked":""}>${u}</label>`).join("");
-      $("businessChecks").querySelectorAll("input").forEach(c => c.addEventListener("change", renderBusiness));
+      $("businessChecks").querySelectorAll("input").forEach(c => c.addEventListener("change", () => {
+        const checked = Array.from($("businessChecks").querySelectorAll("input:checked"));
+        if(checked.length === 1) {
+          $("unitSelect").value = checked[0].value;
+          $("periodUnit").value = checked[0].value;
+        }
+        renderBusiness();
+      }));
     }
     function selectedUnits(){ return Array.from($("businessChecks").querySelectorAll("input:checked")).map(i=>i.value); }
     function renderBusiness(){
@@ -136,30 +314,199 @@
       const blob=new Blob(["\ufeff"+rows.join("\n")],{type:"text/csv;charset=utf-8"}), a=document.createElement("a");
       a.href=URL.createObjectURL(blob); a.download=`${currentData.folder}_사업부별비교.csv`; a.click(); URL.revokeObjectURL(a.href);
     }
-    function renderPeriod(){
-      if(!compareData) return;
-      const unit=$("periodUnit").value || allUnits, days=daysIn(currentData,"periodStart","periodEnd"), labels=days.map(d=>d.day);
-      $("periodStatus").textContent = `${currentData.monthLabel} vs ${compareData.monthLabel}`;
-      [["participants","periodParticipants"],["amount","periodAmount"],["average","periodAverage"]].forEach(([m,id])=>{
-        const base=days.map(d=>value(d,unit,m));
-        const comp=days.map(d=>{ const other=compareData.calendar[d.day-1]; return other?value(other,unit,m):null; });
-        lineChart($(id), [{name:currentData.monthLabel,color:"#1428a0",values:base},{name:compareData.monthLabel,color:"#0b755d",values:comp}], labels);
+    
+    // 다중 비교월 리스트 컨트롤 렌더링 (Task 5)
+    function renderPeriodControls() {
+      const folders = Object.keys(compareDataMap).sort();
+      if(folders.length === 0) {
+        $("periodChecks").innerHTML = `<div style="color:var(--muted); font-size:13px; text-align:center; padding:16px 0;">비교 월 추가 버튼을 눌러 데이터를 로드해 주세요.</div>`;
+        return;
+      }
+      $("periodChecks").innerHTML = folders.map(f => {
+        const label = compareDataMap[f].monthLabel;
+        return `<label><input type="checkbox" value="${f}" checked>${label}</label>`;
+      }).join("");
+      
+      $("periodChecks").querySelectorAll("input").forEach(cb => {
+        cb.addEventListener("change", renderPeriod);
       });
     }
+    function selectedPeriodFolders() {
+      return Array.from($("periodChecks").querySelectorAll("input:checked")).map(cb => cb.value);
+    }
+
+    // 다중 비교월 기간별 비교 렌더링 구현 (Task 5)
+    function renderPeriod(){
+      if(!currentData) return;
+      const unit=$("periodUnit").value || allUnits, days=daysIn(currentData,"periodStart","periodEnd"), labels=days.map(d=>d.day);
+      const activeFolders = selectedPeriodFolders();
+      
+      if(activeFolders.length === 0) {
+        $("periodStatus").textContent = `${currentData.monthLabel} 단독 분석`;
+      } else {
+        $("periodStatus").textContent = `${currentData.monthLabel} vs ${activeFolders.map(f=>compareDataMap[f].monthLabel).join(", ")}`;
+      }
+
+      const metrics = [
+        ["participants", "periodParticipants"],
+        ["amount", "periodAmount"],
+        ["average", "periodAverage"]
+      ];
+
+      metrics.forEach(([m, id])=>{
+        const seriesList = [];
+        
+        // 1. 기준월 데이터
+        seriesList.push({
+          name: currentData.monthLabel,
+          color: colors[0],
+          values: days.map(d => value(d, unit, m))
+        });
+
+        // 2. 선택된 비교월들 데이터 추가
+        activeFolders.forEach((f, idx) => {
+          const compData = compareDataMap[f];
+          seriesList.push({
+            name: compData.monthLabel,
+            color: colors[(idx + 1) % colors.length],
+            values: days.map(d => {
+              const other = compData.calendar[d.day-1];
+              return other ? value(other, unit, m) : null;
+            })
+          });
+        });
+
+        lineChart($(id), seriesList, labels);
+      });
+
+      // 동적 범례 구성 (어떤 선이 어떤 연월인지 직관적으로 표시)
+      const legendItems = [{ name: currentData.monthLabel, color: colors[0] }];
+      activeFolders.forEach((f, idx) => {
+        legendItems.push({
+          name: compareDataMap[f].monthLabel,
+          color: colors[(idx + 1) % colors.length]
+        });
+      });
+      $("periodLegend").innerHTML = legendItems.map(item => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
+
+      // 기간별 비교 표 렌더링
+      renderPeriodTable();
+    }
+
+    // 기간별 비교 표 구현 (Task 6)
+    function renderPeriodTable() {
+      const metric = $("metricSelect").value;
+      const unit = $("periodUnit").value || allUnits;
+      const days = daysIn(currentData, "periodStart", "periodEnd");
+      const activeFolders = selectedPeriodFolders();
+
+      // 첫 열 헤더명을 사용자가 요청한 이미지 규격에 맞춰 "사업부"로 표시
+      const head = `<tr><th class="metric-head">사업부</th>${days.map(d => `<th class="num">${d.day}일</th>`).join("")}</tr>`;
+      
+      const rows = [];
+      // 1. 기준월 행 추가
+      const primaryCells = days.map(d => `<td class="num">${format(value(d, unit, metric))}</td>`).join("");
+      rows.push(`<tr><td>${currentData.monthLabel}</td>${primaryCells}</tr>`);
+
+      // 2. 체크된 비교월 행 추가
+      activeFolders.forEach(f => {
+        const compData = compareDataMap[f];
+        const compCells = days.map(d => {
+          const other = compData.calendar[d.day - 1];
+          const val = other ? value(other, unit, metric) : null;
+          return `<td class="num">${format(val)}</td>`;
+        }).join("");
+        rows.push(`<tr><td>${compData.monthLabel}</td>${compCells}</tr>`);
+      });
+
+      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows.join("")}</tbody></table>`;
+    }
+
+    // 기간별 비교 표 엑셀 다운로드 (Task 6)
+    function periodDownload() {
+      if(!currentData) return;
+      const metric = $("metricSelect").value;
+      const unit = $("periodUnit").value || allUnits;
+      const days = daysIn(currentData, "periodStart", "periodEnd");
+      const activeFolders = selectedPeriodFolders();
+
+      const head = `"사업부",${days.map(d => `"${d.day}일"`).join(",")}`;
+      const rows = [];
+
+      // 1. 기준월 데이터
+      const primaryVals = days.map(d => {
+        const v = value(d, unit, metric);
+        return v === null ? "" : v;
+      }).join(",");
+      rows.push(`"${currentData.monthLabel}",${primaryVals}`);
+
+      // 2. 비교월들 데이터
+      activeFolders.forEach(f => {
+        const compData = compareDataMap[f];
+        const compVals = days.map(d => {
+          const other = compData.calendar[d.day - 1];
+          const v = other ? value(other, unit, metric) : null;
+          return v === null ? "" : v;
+        }).join(",");
+        rows.push(`"${compData.monthLabel}",${compVals}`);
+      });
+
+      const blob = new Blob(["\ufeff" + head + "\n" + rows.join("\n")], {type: "text/csv;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${currentData.folder}_기간비교_${metricMeta[metric].label}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
     function renderAll(){ if(!currentData) return; renderCalendar(); renderBusiness(); renderPeriod(); }
     function showDashboard(data){
       currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · 캐시 사용":""}`;
-      $("unitSelect").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("periodUnit").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("unitSelect").value=allUnits; $("periodUnit").value=allUnits; setRangeInputs(data); renderBusinessControls(); renderAll();
+      $("unitSelect").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("periodUnit").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("unitSelect").value=allUnits; $("periodUnit").value=allUnits; setRangeInputs(data); renderBusinessControls();
+      
+      // 다중 비교 목록 초기화
+      compareDataMap = {};
+      renderPeriodControls();
+      
+      renderAll();
     }
     $("openBtn").addEventListener("click",()=>{ $("folderInput").value=""; });
     $("changeBtn").addEventListener("click",()=>{ $("folderInput").value=""; });
     $("compareOpenBtn").addEventListener("click",()=>{ $("compareInput").value=""; });
+    
     $("businessDownload").addEventListener("click",csvDownload);
-    ["unitSelect","metricSelect","bizStart","bizEnd"].forEach(id=>$(id).addEventListener("change",renderAll));
-    ["periodUnit","periodStart","periodEnd"].forEach(id=>$(id).addEventListener("change",renderPeriod));
+    $("calendarDownload").addEventListener("click",calendarDownload);
+    $("periodDownload").addEventListener("click",periodDownload);
+    
+    // 사업부 선택 동기화 연동 처리 (Task 2)
+    $("unitSelect").addEventListener("change", () => {
+      const u = $("unitSelect").value;
+      const checks = $("businessChecks").querySelectorAll("input");
+      if(checks.length) {
+        checks.forEach(c => c.checked = (c.value === u));
+      }
+      $("periodUnit").value = u;
+      renderAll();
+    });
+
+    $("periodUnit").addEventListener("change", () => {
+      const u = $("periodUnit").value;
+      $("unitSelect").value = u;
+      const checks = $("businessChecks").querySelectorAll("input");
+      if(checks.length) {
+        checks.forEach(c => c.checked = (c.value === u));
+      }
+      renderAll();
+    });
+
+    ["metricSelect","bizStart","bizEnd"].forEach(id=>$(id).addEventListener("change",renderAll));
+    ["periodStart","periodEnd"].forEach(id=>$(id).addEventListener("change",renderPeriod));
+    
     document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); document.querySelectorAll(".page").forEach(p=>p.classList.remove("active")); $(b.dataset.page).classList.add("active"); $("title").textContent=b.textContent; if(b.dataset.page==="businessPage") renderBusiness(); if(b.dataset.page==="periodPage") renderPeriod(); }));
     $("folderInput").addEventListener("change",async()=>{ clearError(); try{ showDashboard(await loadFolder([...$("folderInput").files])); }catch(e){ showError(e.message); }finally{ loading(false); } });
-    $("compareInput").addEventListener("change",async()=>{ clearError(); try{ compareData=await loadFolder([...$("compareInput").files]); renderPeriod(); }catch(e){ showError(e.message); }finally{ loading(false); } });
+    
+    // 다중 비교 월 로드 리스너 연동 (Task 5)
+    $("compareInput").addEventListener("change",async()=>{ clearError(); try{ const d=await loadFolder([...$("compareInput").files]); compareDataMap[d.folder]=d; renderPeriodControls(); renderPeriod(); }catch(e){ showError(e.message); }finally{ loading(false); } });
   </script>
 </body>
 </html>

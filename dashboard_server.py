@@ -11,6 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 from xml.etree.ElementTree import iterparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 
 
 ROOT = Path(r"C:\Users\User\Desktop\0528")
@@ -204,14 +206,31 @@ def analyze_folder(folder_name: str, job_id: str | None = None) -> dict:
 
     by_date: dict[str, dict] = {}
     unit_names: set[str] = set()
-    for index, (date_code, file) in enumerate(candidates, start=1):
-        if job_id:
-            set_job(job_id, processed=index - 1, currentFile=file.name)
-        total, by_unit = read_workbook(file)
-        unit_names.update(by_unit.keys())
-        by_date[date_code] = {"fileName": file.name, "total": total, "businessUnits": by_unit}
-        if job_id:
-            set_job(job_id, processed=index, currentFile=file.name)
+    
+    processed_count = 0
+    lock = threading.Lock()
+    
+    def process_file(dc: str, f: Path) -> tuple[str, str, dict, dict]:
+        tot, bu = read_workbook(f)
+        return dc, f.name, tot, bu
+
+    max_workers = 6
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(process_file, date_code, file): (date_code, file)
+            for date_code, file in candidates
+        }
+        for future in as_completed(futures):
+            try:
+                date_code, file_name, total, by_unit = future.result()
+                with lock:
+                    processed_count += 1
+                    unit_names.update(by_unit.keys())
+                    by_date[date_code] = {"fileName": file_name, "total": total, "businessUnits": by_unit}
+                    if job_id:
+                        set_job(job_id, processed=processed_count, currentFile=file_name)
+            except Exception as exc:
+                raise exc
 
     _, max_day = calendar.monthrange(year, month)
     days = []
