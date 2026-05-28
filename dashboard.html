@@ -18,7 +18,7 @@
     .chart{width:100%;height:300px;display:block}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:10px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.checks{display:grid;gap:8px;max-height:260px;overflow:auto}.checks label{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}.checks input{width:16px;height:16px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}th,td{padding:9px 8px;border:1px solid #e6e9ef;text-align:left}th{background:#fbfcfe;color:var(--muted);font-weight:700}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.metric-head{background:#fff36a;color:#111}
     .period-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.error{display:none;margin-top:16px;border:1px solid #f3b2b2;background:#fff4f4;color:#9d1c1c;border-radius:8px;padding:12px 14px;font-size:13px}.loading{position:fixed;inset:0;background:rgba(238,241,245,.88);display:none;place-items:center;z-index:10}.loading-card{width:min(440px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:24px}.loading-title{font-size:18px;font-weight:760;margin-bottom:8px}.loading-note{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:18px}.progress{height:8px;background:#edf0f5;border-radius:999px;overflow:hidden}.progress-bar{height:100%;width:8%;background:var(--blue);transition:width .25s ease}.progress-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-top:10px}.current-file{margin-top:12px;color:var(--ink);font-size:12px;overflow-wrap:anywhere}
     input[type=file].hidden{position:fixed;left:-9999px;width:1px;height:1px;opacity:0}
-    #chartTooltip{position:absolute;display:none;background:rgba(15,23,42,0.95);color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;pointer-events:none;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.15);line-height:1.4;transition:opacity 0.15s ease}
+    #chartTooltip{position:absolute;display:none;background:rgba(15,23,42,0.95);color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;pointer-events:none;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.15);line-height:1.5;transition:opacity 0.15s ease}
     @media(max-width:1100px){.app{grid-template-columns:1fr}.grid2,.period-grid{grid-template-columns:1fr}.topbar{grid-template-columns:1fr}.tools{justify-content:flex-start}}@media(max-width:720px){.main{padding:16px}.weekdays{display:none}.calendar{grid-template-columns:1fr}.tools,.row{display:grid}.control,.control select,button,input{width:100%}}
   </style>
 </head>
@@ -32,7 +32,7 @@
         <div class="tools">
           <div class="control"><label>사업부</label><select id="unitSelect"></select></div>
           <div class="control"><label>표시 지표</label><select id="metricSelect"><option value="participants">참여인원</option><option value="amount">기부금액</option><option value="average">평균 기부액</option></select></div>
-          <label class="file-button secondary" id="changeBtn" for="folderInput">Open</label>
+          <label class="file-button secondary" id="changeBtn" for="folderInput">Reset</label>
         </div>
       </div>
       
@@ -78,26 +78,41 @@
         </div>
       </section>
       
-      <!-- 기간별 비교 탭 (다중 비교 지원) -->
+      <!-- 기간별 비교 탭 (다중 비교 지원 및 1~31일 지정, 선그래프/달력뷰 토글 지원) -->
       <section class="page" id="periodPage">
         <div class="grid2">
           <div class="card">
             <div class="head">
               <div><h3>기간별 비교</h3><div class="status" id="periodStatus">비교할 월 폴더를 추가해 주세요.</div></div>
-              <label class="file-button" id="compareOpenBtn" for="compareInput">비교 월 추가</label>
+              <label class="file-button" id="compareOpenBtn" for="compareInput">Reset</label>
             </div>
             <div class="section">
               <div class="row">
                 <div class="control"><label>사업부</label><select id="periodUnit"></select></div>
-                <div class="control"><label>시작일</label><input type="date" id="periodStart"></div>
-                <div class="control"><label>종료일</label><input type="date" id="periodEnd"></div>
+                <div class="control"><label>시작일</label><select id="periodStartDay"></select></div>
+                <div class="control"><label>종료일</label><select id="periodEndDay"></select></div>
+                <div class="control">
+                  <label>보기 형식</label>
+                  <select id="periodViewType">
+                    <option value="chart">선그래프 형식</option>
+                    <option value="calendar">달력 형식</option>
+                  </select>
+                </div>
               </div>
-              <div class="period-grid">
-                <div class="panel"><h4>참여인원</h4><svg class="chart" id="periodParticipants"></svg></div>
-                <div class="panel"><h4>기부금액</h4><svg class="chart" id="periodAmount"></svg></div>
-                <div class="panel"><h4>평균 기부액</h4><svg class="chart" id="periodAverage"></svg></div>
+              
+              <!-- 선그래프 형식 영역 -->
+              <div id="periodChartsContainer">
+                <div class="period-grid">
+                  <div class="panel"><h4>참여인원</h4><svg class="chart" id="periodParticipants"></svg></div>
+                  <div class="panel"><h4>기부금액</h4><svg class="chart" id="periodAmount"></svg></div>
+                  <div class="panel"><h4>평균 기부액</h4><svg class="chart" id="periodAverage"></svg></div>
+                </div>
+                <div class="legend" id="periodLegend" style="margin-top: 14px;"></div>
               </div>
-              <div class="legend" id="periodLegend" style="margin-top: 14px;"></div>
+              
+              <!-- 달력 형식 영역 (동적 복수 달력 렌더링) -->
+              <div id="periodCalendarsContainer" style="display: none; flex-direction: column; gap: 20px;">
+              </div>
             </div>
           </div>
           <div class="panel">
@@ -106,7 +121,7 @@
           </div>
         </div>
         
-        <!-- 기간별 비교 표 및 엑셀 다운로드 (새로 구현) -->
+        <!-- 기간별 비교 표 및 엑셀 다운로드 -->
         <div class="card" style="margin-top:16px">
           <div class="head">
             <div><h3>기간별 비교 표</h3><div class="status">선택한 사업부 및 지표 기준 데이터</div></div>
@@ -131,7 +146,7 @@
     const allUnits = "DS부문 전체";
     const colors = ["#1428a0","#0b755d","#9c6b00","#7f56d9","#b42318","#0077b6","#475467","#c2410c"];
     let currentData = null;
-    let compareDataMap = {}; // key: folderName (YYMM), value: analyzed data (다중 월 누적 보관)
+    let compareDataMap = {}; // key: folderName (YYMM), value: analyzed data
     const metricMeta = {
       participants: { label: "참여인원", suffix: "명" },
       amount: { label: "기부금액", suffix: "원" },
@@ -177,9 +192,9 @@
     function format(v){ return v == null ? "-" : fmt.format(v); }
     function dateStr(data, day){ return `${data.year}-${String(data.month).padStart(2,"0")}-${String(day).padStart(2,"0")}`; }
     function setRangeInputs(data){
-      ["bizStart","periodStart"].forEach(id => $(id).value = dateStr(data, 1));
-      ["bizEnd","periodEnd"].forEach(id => $(id).value = dateStr(data, data.daysInMonth));
-      ["bizStart","bizEnd","periodStart","periodEnd"].forEach(id => { $(id).min = dateStr(data, 1); $(id).max = dateStr(data, data.daysInMonth); });
+      ["bizStart"].forEach(id => $(id).value = dateStr(data, 1));
+      ["bizEnd"].forEach(id => $(id).value = dateStr(data, data.daysInMonth));
+      ["bizStart","bizEnd"].forEach(id => { $(id).min = dateStr(data, 1); $(id).max = dateStr(data, data.daysInMonth); });
     }
     function inRange(day, startId, endId){
       const s = Number($(startId).value.slice(-2) || 1), e = Number($(endId).value.slice(-2) || 31);
@@ -187,7 +202,31 @@
     }
     function daysIn(data, startId, endId){ return data.calendar.filter(d => inRange(d, startId, endId)); }
     
-    // 차트 인터랙티브 툴팁 노출 위치 제어 함수 (Task 3)
+    // 기간별 비교 필터 함수 (1일 ~ 31일 슬롯 방식) (Task 10)
+    function inPeriodRange(day) {
+      const s = Number($("periodStartDay").value || 1);
+      const e = Number($("periodEndDay").value || 31);
+      const start = Math.min(s, e);
+      const end = Math.max(s, e);
+      return day.day >= start && day.day <= end;
+    }
+    function daysInPeriod(data) {
+      return data.calendar.filter(inPeriodRange);
+    }
+    function populatePeriodDays() {
+      const start = $("periodStartDay");
+      const end = $("periodEndDay");
+      start.innerHTML = "";
+      end.innerHTML = "";
+      for (let d = 1; d <= 31; d++) {
+        start.insertAdjacentHTML("beforeend", `<option value="${d}">${d}일</option>`);
+        end.insertAdjacentHTML("beforeend", `<option value="${d}">${d}일</option>`);
+      }
+      start.value = "1";
+      end.value = "31";
+    }
+
+    // 차트 인터랙티브 툴팁 노출 위치 제어
     function updateTooltipPos(e) {
       const tooltip = $("chartTooltip");
       const offset = 15;
@@ -195,7 +234,49 @@
       tooltip.style.top = `${e.pageY - tooltip.offsetHeight / 2}px`;
     }
 
-    // 반응형 라인 차트 및 인터랙티브 툴팁 구현 (Task 3)
+    // 호버 시 해당 날짜의 통합 지표 데이터(날짜, 참여인원, 기부금액, 평균 기부액) 반환하는 헬퍼 함수 (Task 9)
+    function getTooltipContent(s, si, i, labels) {
+      const dayNum = labels[i];
+      let titleStr = "";
+      let dayObj = null;
+      let unit = "";
+
+      // 1. 사업부별 비교인지 기간별 비교인지 판별
+      if (currentData && currentData.businessUnits.includes(s.name)) {
+        // 사업부별 비교
+        titleStr = `${s.name} (${dayNum}일)`;
+        dayObj = currentData.calendar[dayNum - 1];
+        unit = s.name;
+      } else {
+        // 기간별 비교
+        titleStr = `${s.name} (${dayNum}일)`;
+        unit = $("periodUnit").value || allUnits;
+        
+        let monthData = currentData;
+        if (currentData.monthLabel !== s.name) {
+          const folder = Object.keys(compareDataMap).find(f => compareDataMap[f].monthLabel === s.name);
+          if (folder) {
+            monthData = compareDataMap[folder];
+          }
+        }
+        dayObj = monthData ? monthData.calendar[dayNum - 1] : null;
+      }
+
+      if (!dayObj || !dayObj.fileName) {
+        return `<strong>${titleStr}</strong><br/>• 데이터 없음`;
+      }
+
+      const part = value(dayObj, unit, "participants");
+      const amt = value(dayObj, unit, "amount");
+      const avg = value(dayObj, unit, "average");
+
+      return `<strong>${titleStr}</strong><br/>` +
+             `• 참여인원: ${part === null ? "-" : fmt.format(part) + "명"}<br/>` +
+             `• 기부금액: ${amt === null ? "-" : fmt.format(amt) + "원"}<br/>` +
+             `• 평균 기부액: ${avg === null ? "-" : fmt.format(avg) + "원"}`;
+    }
+
+    // 반응형 라인 차트 및 인터랙티브 툴팁 구현
     function lineChart(svg, series, labels){
       const w=900,h=300,p={l:58,r:18,t:18,b:34};
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
@@ -218,9 +299,6 @@
           svg.appendChild(polyline);
         }
 
-        const metric = $("metricSelect").value;
-        const suffix = metricMeta[metric]?.suffix || "";
-
         // 개별 데이터 포인트 원 엘리먼트 추가 및 호버 이벤트 연결
         s.values.forEach((v, i) => {
           if (v == null) return;
@@ -236,8 +314,8 @@
           circle.addEventListener("mouseenter", (e) => {
             circle.setAttribute("r", "7");
             const tooltip = $("chartTooltip");
-            const valStr = format(v) + suffix;
-            tooltip.innerHTML = `<strong>${s.name}</strong><br/>${labels[i]}일: ${valStr}`;
+            // 호버 시 날짜, 참여인원, 금액, 평균액을 모두 노출하도록 getTooltipContent 적용
+            tooltip.innerHTML = getTooltipContent(s, si, i, labels);
             tooltip.style.display = "block";
             updateTooltipPos(e);
           });
@@ -264,7 +342,7 @@
       requestAnimationFrame(fitValues);
     }
     
-    // 달력 현황 엑셀 다운로드 (Task 4)
+    // 달력 현황 엑셀 다운로드
     function calendarDownload() {
       if(!currentData) return;
       const metric = $("metricSelect").value;
@@ -287,7 +365,7 @@
       URL.revokeObjectURL(a.href);
     }
 
-    // 사업부 선택 컨트롤 바인딩 및 상하 양방향 동기화 구현 (Task 2)
+    // 사업부 선택 컨트롤 바인딩 및 상하 양방향 동기화
     function renderBusinessControls(){
       $("businessChecks").innerHTML = currentData.businessUnits.map((u,i)=>`<label><input type="checkbox" value="${u}" ${i===0?"checked":""}>${u}</label>`).join("");
       $("businessChecks").querySelectorAll("input").forEach(c => c.addEventListener("change", () => {
@@ -315,7 +393,7 @@
       a.href=URL.createObjectURL(blob); a.download=`${currentData.folder}_사업부별비교.csv`; a.click(); URL.revokeObjectURL(a.href);
     }
     
-    // 다중 비교월 리스트 컨트롤 렌더링 (Task 5)
+    // 다중 비교월 리스트 컨트롤 렌더링 (기본 로드 시 체크되게 구성) (Task 5)
     function renderPeriodControls() {
       const folders = Object.keys(compareDataMap).sort();
       if(folders.length === 0) {
@@ -335,17 +413,12 @@
       return Array.from($("periodChecks").querySelectorAll("input:checked")).map(cb => cb.value);
     }
 
-    // 다중 비교월 기간별 비교 렌더링 구현 (Task 5)
-    function renderPeriod(){
-      if(!currentData) return;
-      const unit=$("periodUnit").value || allUnits, days=daysIn(currentData,"periodStart","periodEnd"), labels=days.map(d=>d.day);
+    // 선그래프 그리기 함수 분리
+    function drawPeriodCharts() {
+      const unit = $("periodUnit").value || allUnits;
+      const days = daysInPeriod(currentData);
+      const labels = days.map(d => d.day);
       const activeFolders = selectedPeriodFolders();
-      
-      if(activeFolders.length === 0) {
-        $("periodStatus").textContent = `${currentData.monthLabel} 단독 분석`;
-      } else {
-        $("periodStatus").textContent = `${currentData.monthLabel} vs ${activeFolders.map(f=>compareDataMap[f].monthLabel).join(", ")}`;
-      }
 
       const metrics = [
         ["participants", "periodParticipants"],
@@ -379,7 +452,7 @@
         lineChart($(id), seriesList, labels);
       });
 
-      // 동적 범례 구성 (어떤 선이 어떤 연월인지 직관적으로 표시)
+      // 동적 범례 구성
       const legendItems = [{ name: currentData.monthLabel, color: colors[0] }];
       activeFolders.forEach((f, idx) => {
         legendItems.push({
@@ -388,67 +461,176 @@
         });
       });
       $("periodLegend").innerHTML = legendItems.map(item => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
+    }
 
-      // 기간별 비교 표 렌더링
+    // 복수 달력 그리기 구현 (설정 범위 내의 날짜만 활성화) (Task 12)
+    function renderPeriodCalendars() {
+      const container = $("periodCalendarsContainer");
+      container.innerHTML = "";
+      
+      const metric = $("metricSelect").value;
+      const meta = metricMeta[metric];
+      const unit = $("periodUnit").value || allUnits;
+      
+      // 시간 오름차순으로 모든 로드된 데이터 취합
+      const activeFolders = selectedPeriodFolders();
+      const allDatasets = [currentData];
+      activeFolders.forEach(f => {
+        if(compareDataMap[f]) allDatasets.push(compareDataMap[f]);
+      });
+      allDatasets.sort((a, b) => a.folder.localeCompare(b.folder));
+      
+      allDatasets.forEach(data => {
+        const daysInSelRange = daysInPeriod(data);
+        const vals = daysInSelRange.map(d => value(d, unit, metric)).filter(v => v !== null);
+        const min = vals.length ? Math.min(...vals) : 0;
+        const max = vals.length ? Math.max(...vals) : 0;
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.marginTop = "16px";
+        
+        const head = `
+          <div class="head" style="background:#fbfcfe; border-bottom:1px solid var(--line);">
+            <div><h3>${data.monthLabel} 달력</h3><div class="status">${data.fileCount}개 파일 반영</div></div>
+            <div class="status">${unit} · ${meta.label}</div>
+          </div>
+        `;
+        card.innerHTML = head;
+        
+        const weekdays = document.createElement("div");
+        weekdays.className = "weekdays";
+        weekdays.innerHTML = `<div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>`;
+        card.appendChild(weekdays);
+        
+        const calendarGrid = document.createElement("div");
+        calendarGrid.className = "calendar";
+        
+        // 캘린더 요일 시작 offset 추가
+        const firstDay = data.calendar[0];
+        for (let i = 0; i < firstDay.weekday; i++) {
+          const empty = document.createElement("div");
+          empty.className = "day empty";
+          calendarGrid.appendChild(empty);
+        }
+        
+        // 일자별 셀 렌더링
+        data.calendar.forEach(d => {
+          const inRange = inPeriodRange(d);
+          const dayCell = document.createElement("div");
+          
+          if (!inRange) {
+            // 기간 설정 밖: 반투명하고 값 제외 표기
+            dayCell.className = "day";
+            dayCell.style.opacity = "0.35";
+            dayCell.innerHTML = `<div class="day-top"><div class="day-no">${d.day}</div></div><div class="value"></div>`;
+          } else {
+            // 설정 범위 안: 표준 캘린더 렌더링 반영
+            const v = value(d, unit, metric);
+            if (v === null) {
+              dayCell.className = "day";
+              dayCell.innerHTML = `
+                <div class="day-top">
+                  <div class="day-no">${d.day}</div>
+                  <span class="badge no">파일 없음</span>
+                </div>
+                <div class="value"><span>${meta.label}</span><strong>-</strong></div>
+              `;
+            } else {
+              dayCell.className = "day has-data";
+              dayCell.style.setProperty("--heat", heatColor(v, min, max));
+              dayCell.innerHTML = `
+                <div class="day-top">
+                  <div class="day-no">${d.day}</div>
+                  <span class="badge ok">반영</span>
+                </div>
+                <div class="value"><span>${meta.label}</span><strong>${format(v)}</strong></div>
+              `;
+            }
+          }
+          calendarGrid.appendChild(dayCell);
+        });
+        
+        card.appendChild(calendarGrid);
+        container.appendChild(card);
+      });
+      
+      requestAnimationFrame(fitValues);
+    }
+
+    // 기간별 비교 메인 렌더링 (Task 5)
+    function renderPeriod(){
+      if(!currentData) return;
+      
+      const viewType = $("periodViewType").value;
+      if (viewType === "chart") {
+        $("periodChartsContainer").style.display = "block";
+        $("periodCalendarsContainer").style.display = "none";
+        drawPeriodCharts();
+      } else {
+        $("periodChartsContainer").style.display = "none";
+        $("periodCalendarsContainer").style.display = "flex";
+        renderPeriodCalendars();
+      }
+
+      // 항상 비교 데이터 표 업데이트
       renderPeriodTable();
     }
 
-    // 기간별 비교 표 구현 (Task 6)
+    // 기간별 비교 표 렌더링 (1행 1열을 지정 사업부로 실시간 변경, 행을 시간 오름차순 정렬) (Task 11)
     function renderPeriodTable() {
       const metric = $("metricSelect").value;
       const unit = $("periodUnit").value || allUnits;
-      const days = daysIn(currentData, "periodStart", "periodEnd");
+      const days = daysInPeriod(currentData);
       const activeFolders = selectedPeriodFolders();
 
-      // 첫 열 헤더명을 사용자가 요청한 이미지 규격에 맞춰 "사업부"로 표시
-      const head = `<tr><th class="metric-head">사업부</th>${days.map(d => `<th class="num">${d.day}일</th>`).join("")}</tr>`;
+      // 1행 1열의 첫번째 셀 헤더명을 지정 사업부 이름으로 실시간 적용
+      const head = `<tr><th class="metric-head">${unit}</th>${days.map(d => `<th class="num">${d.day}일</th>`).join("")}</tr>`;
       
-      const rows = [];
-      // 1. 기준월 행 추가
-      const primaryCells = days.map(d => `<td class="num">${format(value(d, unit, metric))}</td>`).join("");
-      rows.push(`<tr><td>${currentData.monthLabel}</td>${primaryCells}</tr>`);
-
-      // 2. 체크된 비교월 행 추가
+      // 시간 오름차순 정렬 대상 데이터셋 조립 (기준월 포함)
+      const allDatasets = [currentData];
       activeFolders.forEach(f => {
-        const compData = compareDataMap[f];
-        const compCells = days.map(d => {
-          const other = compData.calendar[d.day - 1];
-          const val = other ? value(other, unit, metric) : null;
+        if(compareDataMap[f]) allDatasets.push(compareDataMap[f]);
+      });
+      // YYMM 폴더코드 기준 시간 오름차순(Chronological Ascending) 정렬
+      allDatasets.sort((a, b) => a.folder.localeCompare(b.folder));
+
+      const rows = allDatasets.map(data => {
+        const cells = days.map(d => {
+          const dayObj = data.calendar[d.day - 1];
+          const val = dayObj ? value(dayObj, unit, metric) : null;
           return `<td class="num">${format(val)}</td>`;
         }).join("");
-        rows.push(`<tr><td>${compData.monthLabel}</td>${compCells}</tr>`);
-      });
+        return `<tr><td>${data.monthLabel}</td>${cells}</tr>`;
+      }).join("");
 
-      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows.join("")}</tbody></table>`;
+      $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
     }
 
-    // 기간별 비교 표 엑셀 다운로드 (Task 6)
+    // 기간별 비교 표 엑셀 다운로드 (시간 오름차순 및 헤더 반영 적용) (Task 11)
     function periodDownload() {
       if(!currentData) return;
       const metric = $("metricSelect").value;
       const unit = $("periodUnit").value || allUnits;
-      const days = daysIn(currentData, "periodStart", "periodEnd");
+      const days = daysInPeriod(currentData);
       const activeFolders = selectedPeriodFolders();
 
-      const head = `"사업부",${days.map(d => `"${d.day}일"`).join(",")}`;
-      const rows = [];
-
-      // 1. 기준월 데이터
-      const primaryVals = days.map(d => {
-        const v = value(d, unit, metric);
-        return v === null ? "" : v;
-      }).join(",");
-      rows.push(`"${currentData.monthLabel}",${primaryVals}`);
-
-      // 2. 비교월들 데이터
+      // 헤더 첫 열은 지정 사업부 이름 적용
+      const head = `"${unit}",${days.map(d => `"${d.day}일"`).join(",")}`;
+      
+      const allDatasets = [currentData];
       activeFolders.forEach(f => {
-        const compData = compareDataMap[f];
-        const compVals = days.map(d => {
-          const other = compData.calendar[d.day - 1];
-          const v = other ? value(other, unit, metric) : null;
+        if(compareDataMap[f]) allDatasets.push(compareDataMap[f]);
+      });
+      allDatasets.sort((a, b) => a.folder.localeCompare(b.folder));
+
+      const rows = allDatasets.map(data => {
+        const vals = days.map(d => {
+          const dayObj = data.calendar[d.day - 1];
+          const v = dayObj ? value(dayObj, unit, metric) : null;
           return v === null ? "" : v;
         }).join(",");
-        rows.push(`"${compData.monthLabel}",${compVals}`);
+        return `"${data.monthLabel}",${vals}`;
       });
 
       const blob = new Blob(["\ufeff" + head + "\n" + rows.join("\n")], {type: "text/csv;charset=utf-8"});
@@ -464,6 +646,9 @@
       currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · 캐시 사용":""}`;
       $("unitSelect").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("periodUnit").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("unitSelect").value=allUnits; $("periodUnit").value=allUnits; setRangeInputs(data); renderBusinessControls();
       
+      // 1일 ~ 31일 일자 필터 드롭다운 구성
+      populatePeriodDays();
+      
       // 다중 비교 목록 초기화
       compareDataMap = {};
       renderPeriodControls();
@@ -478,7 +663,7 @@
     $("calendarDownload").addEventListener("click",calendarDownload);
     $("periodDownload").addEventListener("click",periodDownload);
     
-    // 사업부 선택 동기화 연동 처리 (Task 2)
+    // 사업부 선택 동기화 연동 처리
     $("unitSelect").addEventListener("change", () => {
       const u = $("unitSelect").value;
       const checks = $("businessChecks").querySelectorAll("input");
@@ -500,12 +685,14 @@
     });
 
     ["metricSelect","bizStart","bizEnd"].forEach(id=>$(id).addEventListener("change",renderAll));
-    ["periodStart","periodEnd"].forEach(id=>$(id).addEventListener("change",renderPeriod));
+    
+    // 기간 비교 페이지 1일~31일 드롭다운 및 보기 형식 셀렉터 리스너 (Task 10 & 12)
+    ["periodStartDay","periodEndDay","periodViewType"].forEach(id=>$(id).addEventListener("change",renderPeriod));
     
     document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); document.querySelectorAll(".page").forEach(p=>p.classList.remove("active")); $(b.dataset.page).classList.add("active"); $("title").textContent=b.textContent; if(b.dataset.page==="businessPage") renderBusiness(); if(b.dataset.page==="periodPage") renderPeriod(); }));
     $("folderInput").addEventListener("change",async()=>{ clearError(); try{ showDashboard(await loadFolder([...$("folderInput").files])); }catch(e){ showError(e.message); }finally{ loading(false); } });
     
-    // 다중 비교 월 로드 리스너 연동 (Task 5)
+    // 다중 비교 월 로드 리스너 연동
     $("compareInput").addEventListener("change",async()=>{ clearError(); try{ const d=await loadFolder([...$("compareInput").files]); compareDataMap[d.folder]=d; renderPeriodControls(); renderPeriod(); }catch(e){ showError(e.message); }finally{ loading(false); } });
   </script>
 </body>
