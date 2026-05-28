@@ -695,24 +695,40 @@
             dayCell.innerHTML = `<div class="day-top"><div class="day-no">${d.day}</div></div><div class="value"></div>`;
           } else {
             const v = value(d, unit, metric);
+            const body = v == null ? "-" : format(v);
+            
             if (v === null) {
               dayCell.className = "day";
               dayCell.innerHTML = `
                 <div class="day-top">
-                  <div class="day-no">${d.day}</div>
+                  <div class="day-no" style="font-weight: 700;">${d.day}</div>
                   <span class="badge no">파일 없음</span>
                 </div>
-                <div class="value"><span>${meta.label}</span><strong>-</strong></div>
+                <div class="value">
+                  <span style="color: #64748b; font-size: 11px;">${meta.label}</span>
+                  <strong style="color: #0f172a; font-weight: 800;">${body}</strong>
+                </div>
               `;
             } else {
               dayCell.className = "day has-data";
-              dayCell.style.setProperty("--heat", heatColor(v, min, max));
+              
+              // 다이내믹 min-max 스케일링 비율 계산 (달력 현황과 100% 동기화)
+              const range = max - min || 1;
+              const pct = range > 0 ? Math.round(((v - min) / range) * 88) + 8 : 50;
+              const barColorStart = "#ff922b"; 
+              const barColorEnd = "#ffe8cc";   
+              
+              dayCell.setAttribute("style", `background: linear-gradient(to right, ${barColorStart} 0%, ${barColorEnd} ${pct}%, #ffffff ${pct}%, #ffffff 100%); border-color: #ffd8a8;`);
+              
               dayCell.innerHTML = `
                 <div class="day-top">
-                  <div class="day-no">${d.day}</div>
+                  <div class="day-no" style="font-weight: 700;">${d.day}</div>
                   <span class="badge ok">반영</span>
                 </div>
-                <div class="value"><span>${meta.label}</span><strong>${format(v)}</strong></div>
+                <div class="value">
+                  <span style="color: #64748b; font-size: 11px;">${meta.label}</span>
+                  <strong style="color: #0f172a; font-weight: 800;">${body}</strong>
+                </div>
               `;
             }
           }
