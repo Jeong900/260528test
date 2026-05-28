@@ -3,8 +3,10 @@ from __future__ import annotations
 import calendar
 import json
 import re
+import sys
 import threading
 import uuid
+import webbrowser
 import zipfile
 import traceback
 from datetime import datetime
@@ -16,7 +18,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 
-ROOT = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    ROOT = Path(sys.executable).resolve().parent
+    APP_ROOT = Path(getattr(sys, "_MEIPASS", ROOT))
+else:
+    ROOT = Path(__file__).resolve().parent
+    APP_ROOT = ROOT
 CACHE_DIR = ROOT / ".dashboard_cache"
 PORT = 8765
 FOLDER_RE = re.compile(r"^\d{4}$")
@@ -419,6 +426,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
         try:
             if parsed.path in ("/", "/index.html"):
                 html_path = ROOT / "dashboard.html"
+                if not html_path.exists():
+                    html_path = APP_ROOT / "dashboard.html"
                 body = html_path.read_bytes() if html_path.exists() else HTML.encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -455,7 +464,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     server = ThreadingHTTPServer(("127.0.0.1", PORT), DashboardHandler)
-    print(f"http://127.0.0.1:{PORT}", flush=True)
+    url = f"http://127.0.0.1:{PORT}"
+    print(url, flush=True)
+    threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     server.serve_forever()
 
 
