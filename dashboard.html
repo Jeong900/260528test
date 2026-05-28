@@ -397,12 +397,11 @@
       a.href=URL.createObjectURL(blob); a.download=`${currentData.folder}_사업부별비교.csv`; a.click(); URL.revokeObjectURL(a.href);
     }
     
-    // 다중 비교월 리스트 컨트롤 렌더링 (기준 연월도 기본 활성화 상태의 체크박스로 노출)
+    // 다중 비교월 리스트 컨트롤 렌더링
     function renderPeriodControls() {
       if (!currentData) return;
       const folders = Object.keys(compareDataMap).sort();
       
-      // 현재 메인 셋팅되어 있는 연월이 기본적으로 체크박스 리스트 최상단에 자동 표시되도록 기본 세팅
       let html = `<label><input type="checkbox" value="primary" checked> ${currentData.monthLabel} (기준)</label>`;
       
       html += folders.map(f => {
@@ -442,7 +441,7 @@
       metrics.forEach(([m, id])=>{
         const seriesList = [];
         
-        // 1. 기준월 데이터 (체크박스가 켜져있을 때만 그래프 렌더링)
+        // 1. 기준월 데이터
         if (showPrimary) {
           seriesList.push({
             name: currentData.monthLabel,
@@ -625,15 +624,15 @@
       $("periodTable").innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
     }
 
-    // 기간별 비교 표 엑셀 다운로드 (시간 오름차순 및 동적 사업부명 동기화)
+    // 기간별 비교 - 모든 선그래프 통합 대용량 CSV 추출 기능 구현
     function periodDownload() {
       if(!currentData) return;
-      const metric = $("metricSelect").value;
       const unit = $("periodUnit").value || allUnits;
       const days = daysInPeriod(currentData);
       const activeFolders = selectedPeriodFolders();
       const showPrimary = isPrimaryChecked();
 
+      // 헤더 첫 열은 지정 사업부 이름 적용
       const head = `"${unit}",${days.map(d => `"${d.day}일"`).join(",")}`;
       
       const allDatasets = [];
@@ -645,26 +644,31 @@
       });
       allDatasets.sort((a, b) => a.folder.localeCompare(b.folder));
 
-      const rows = allDatasets.map(data => {
-        const vals = days.map(d => {
-          const dayObj = data.calendar[d.day - 1];
-          const v = dayObj ? value(dayObj, unit, metric) : null;
-          return v === null ? "" : v;
-        }).join(",");
-        return `"${data.monthLabel}",${vals}`;
+      const rows = [];
+      allDatasets.forEach(data => {
+        // 사용자가 기간별 비교 페이지에서 보고 있는 3개 그래프(참여인원, 기부금액, 평균 기부액)의 모든 연월별 데이터를 한 번에 추출
+        ["participants", "amount", "average"].forEach(m => {
+          const mLabel = metricMeta[m].label;
+          const vals = days.map(d => {
+            const dayObj = data.calendar[d.day - 1];
+            const v = dayObj ? value(dayObj, unit, m) : null;
+            return v === null ? "" : v;
+          }).join(",");
+          rows.push(`"${data.monthLabel} (${mLabel})",${vals}`);
+        });
       });
 
       const blob = new Blob(["\ufeff" + head + "\n" + rows.join("\n")], {type: "text/csv;charset=utf-8"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `${currentData.folder}_기간비교_${metricMeta[metric].label}.csv`;
+      a.download = `${currentData.folder}_기간비교_통합데이터.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
     }
 
     function renderAll(){ if(!currentData) return; renderCalendar(); renderBusiness(); renderPeriod(); }
     function showDashboard(data){
-      currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · 캐시 사용":""}`;
+      currentData=data; $("app").style.display="grid"; $("intro").style.display="none"; $("subtitle").textContent=`${data.monthLabel} · DS부문`; $("calendarTitle").textContent=`${data.monthLabel} 달력`; $("status").textContent=`${data.fileCount}개 파일 반영${data.cached?" · cache 사용":""}`;
       $("unitSelect").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("periodUnit").innerHTML=data.businessUnits.map(u=>`<option>${u}</option>`).join(""); $("unitSelect").value=allUnits; $("periodUnit").value=allUnits; setRangeInputs(data); renderBusinessControls();
       
       populatePeriodDays();
