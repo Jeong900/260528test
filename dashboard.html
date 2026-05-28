@@ -33,7 +33,7 @@
         • <strong>폴더명</strong>: YYMM 형식 (예: 2026년 5월 데이터는 <strong>2605</strong> 폴더)<br/>
         • <strong>파일명</strong>: YYMMDD_데이터(전체).xlsx 또는 YYMMDD_데이터(전체)_dummy.xlsx 형식 (예: 260501_데이터(전체).xlsx)<br/><br/>
         <strong>[이용 방법]</strong><br/>
-        아래의 <strong>Open</strong> 버튼을 클릭한 후, 위 명명 규칙에 맞는 월별 데이터 폴더(예: <strong>2605</strong>)를 통째로 선택하여 업로드해 주세요. 대용량 파일도 병렬 처리하여 빠르게 로드하며, 분석이 끝난 폴더는 자동으로 캐싱 처리되어 다음 조회 시 매우 빠르게 진입할 수 있습니다.
+        아래의 <strong>Open</strong> 버튼을 클릭한 후, 위 명명 규칙에 맞는 월별 데이터 폴더(예: <strong>2605</strong>)를 통째로 선택해 주세요. 이 HTML 단독 배포판은 서버 통신 없이 브라우저에서 로컬 파일을 직접 읽어 분석합니다.
       </p>
       <label class="file-button" id="openBtn" for="folderInput">Open</label>
     </div>
@@ -196,21 +196,167 @@
       $("currentFile").textContent = job.currentFile || "분석 중";
     }
     function loading(on){ $("loading").style.display = on ? "grid" : "none"; if(on) setProgress({processed:0,total:0,currentFile:"분석 준비 중"}); }
+    function parseYearMonth(name){
+      const year = 2000 + Number(name.slice(0,2));
+      const month = Number(name.slice(2));
+      if(month < 1 || month > 12) throw new Error("폴더명의 월 정보가 올바르지 않습니다.");
+      return {year, month};
+    }
+    function moneyToInt(value){
+      if(value == null) return 0;
+      const n = Number(String(value).replace(/,/g, "").trim());
+      return Number.isFinite(n) ? Math.trunc(n) : 0;
+    }
+    function emptyMetric(){ return {participants:0, amount:0}; }
+    function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
+    function xmlText(doc, selector){ const node = doc.querySelector(selector); return node ? node.textContent || "" : ""; }
+    function colName(ref){ return String(ref || "").replace(/[0-9]/g, ""); }
+    async function inflateRaw(bytes){
+      if(!("DecompressionStream" in window)) throw new Error("이 브라우저는 HTML 단독 엑셀 분석을 지원하지 않습니다. 최신 Chrome 또는 Edge로 열어 주세요.");
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      return new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+    async function unzipXlsx(file){
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const view = new DataView(bytes.buffer);
+      let eocd = -1;
+      for(let i = bytes.length - 22; i >= Math.max(0, bytes.length - 66000); i--){
+        if(view.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
+      }
+      if(eocd < 0) throw new Error(`${file.name}: XLSX ZIP 구조를 읽을 수 없습니다.`);
+      const entries = view.getUint16(eocd + 10, true);
+      const centralOffset = view.getUint32(eocd + 16, true);
+      const decoder = new TextDecoder("utf-8");
+      const out = {};
+      let ptr = centralOffset;
+      for(let i = 0; i < entries; i++){
+        if(view.getUint32(ptr, true) !== 0x02014b50) break;
+        const method = view.getUint16(ptr + 10, true);
+        const compressedSize = view.getUint32(ptr + 20, true);
+        const nameLen = view.getUint16(ptr + 28, true);
+        const extraLen = view.getUint16(ptr + 30, true);
+        const commentLen = view.getUint16(ptr + 32, true);
+        const localOffset = view.getUint32(ptr + 42, true);
+        const name = decoder.decode(bytes.slice(ptr + 46, ptr + 46 + nameLen));
+        ptr += 46 + nameLen + extraLen + commentLen;
+
+        if(!name.startsWith("xl/")) continue;
+        if(view.getUint32(localOffset, true) !== 0x04034b50) continue;
+        const localNameLen = view.getUint16(localOffset + 26, true);
+        const localExtraLen = view.getUint16(localOffset + 28, true);
+        const dataStart = localOffset + 30 + localNameLen + localExtraLen;
+        const compressed = bytes.slice(dataStart, dataStart + compressedSize);
+        let data;
+        if(method === 0) data = compressed;
+        else if(method === 8) data = await inflateRaw(compressed);
+        else continue;
+        out[name] = decoder.decode(data);
+      }
+      return out;
+    }
+    function readSharedStrings(xml){
+      if(!xml) return [];
+      const doc = new DOMParser().parseFromString(xml, "application/xml");
+      return Array.from(doc.getElementsByTagName("si")).map(si =>
+        Array.from(si.getElementsByTagName("t")).map(t => t.textContent || "").join("")
+      );
+    }
+    function sheetXml(files){
+      if(files["xl/worksheets/sheet1.xml"]) return files["xl/worksheets/sheet1.xml"];
+      const key = Object.keys(files).find(name => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
+      if(!key) throw new Error("엑셀 파일에서 분석할 시트를 찾을 수 없습니다.");
+      return files[key];
+    }
+    function cellValue(cell, sharedStrings){
+      const type = cell.getAttribute("t");
+      if(type === "inlineStr") return Array.from(cell.getElementsByTagName("t")).map(t => t.textContent || "").join("");
+      const raw = xmlText(cell, "v");
+      if(type === "s") return sharedStrings[Number(raw)] || "";
+      return raw;
+    }
+    async function readWorkbook(file){
+      const xlsx = await unzipXlsx(file);
+      const sharedStrings = readSharedStrings(xlsx["xl/sharedStrings.xml"]);
+      const doc = new DOMParser().parseFromString(sheetXml(xlsx), "application/xml");
+      const total = emptyMetric();
+      const byUnit = {};
+      Array.from(doc.getElementsByTagName("row")).forEach(row => {
+        const rowNumber = Number(row.getAttribute("r") || 0);
+        if(rowNumber < 3) return;
+        const values = {A:"", B:"", I:""};
+        Array.from(row.getElementsByTagName("c")).forEach(cell => {
+          const col = colName(cell.getAttribute("r"));
+          if(col in values) values[col] = cellValue(cell, sharedStrings);
+        });
+        if(values.A === "DS(Korea)"){
+          const unit = values.B || "미지정";
+          const amount = moneyToInt(values.I);
+          total.participants += 1;
+          total.amount += amount;
+          byUnit[unit] ||= emptyMetric();
+          byUnit[unit].participants += 1;
+          byUnit[unit].amount += amount;
+        }
+      });
+      return {total, byUnit};
+    }
+    function unitSortKey(name){
+      const order = ["전체","메모리","System LSI","Foundry","반도체연구소","글로벌","TSP","AI","CSS","SAIT","경영전략","부문직속"];
+      const compact = String(name).replace(/\s/g, "");
+      const idx = order.findIndex(token => compact.includes(token.replace(/\s/g, "")));
+      return idx < 0 ? order.length : idx;
+    }
     async function loadFolder(files){
       const f = folderName(files);
       loading(true);
-      const startRes = await fetch(`/api/start-analysis?folder=${encodeURIComponent(f)}`);
-      const start = await startRes.json();
-      if(!startRes.ok) throw new Error(start.error || "분석을 시작하지 못했습니다.");
-      for(;;){
-        const res = await fetch(`/api/job?id=${encodeURIComponent(start.jobId)}`);
-        const job = await res.json();
-        if(!res.ok) throw new Error(job.error || "작업 상태를 확인하지 못했습니다.");
-        setProgress(job);
-        if(job.status === "completed") return job.data;
-        if(job.status === "error") throw new Error(job.error || "분석 중 오류가 발생했습니다.");
-        await new Promise(resolve => setTimeout(resolve, 650));
+      const {year, month} = parseYearMonth(f);
+      const fileRe = /^(\d{6})_데이터\(전체\)(?:_dummy)?\.xlsx$/;
+      const candidates = [];
+      const ignoredFiles = [];
+      files.filter(file => file.name.toLowerCase().endsWith(".xlsx")).forEach(file => {
+        const match = fileRe.exec(file.name);
+        if(!match || !match[1].startsWith(f)){ ignoredFiles.push(file.name); return; }
+        candidates.push({dateCode: match[1], file});
+      });
+      candidates.sort((a,b) => a.dateCode.localeCompare(b.dateCode));
+      const byDate = {};
+      const unitNames = new Set();
+      for(let i = 0; i < candidates.length; i++){
+        const item = candidates[i];
+        setProgress({processed:i, total:candidates.length, currentFile:item.file.name});
+        const {total, byUnit} = await readWorkbook(item.file);
+        Object.keys(byUnit).forEach(unit => unitNames.add(unit));
+        byDate[item.dateCode] = {fileName:item.file.name, total, businessUnits:byUnit};
+        setProgress({processed:i + 1, total:candidates.length, currentFile:item.file.name});
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
+      const maxDay = daysInMonth(year, month);
+      const calendar = [];
+      for(let day = 1; day <= maxDay; day++){
+        const dateCode = `${String(year % 100).padStart(2,"0")}${String(month).padStart(2,"0")}${String(day).padStart(2,"0")}`;
+        const dateObj = new Date(year, month - 1, day);
+        const dayData = byDate[dateCode];
+        calendar.push({
+          dateCode,
+          day,
+          weekday: dateObj.getDay(),
+          fileName: dayData ? dayData.fileName : null,
+          total: dayData ? dayData.total : emptyMetric(),
+          businessUnits: dayData ? dayData.businessUnits : {},
+        });
+      }
+      return {
+        folder:f,
+        year,
+        month,
+        monthLabel:`${year}년 ${month}월`,
+        daysInMonth:maxDay,
+        fileCount:Object.keys(byDate).length,
+        businessUnits:[allUnits, ...Array.from(unitNames).sort((a,b) => unitSortKey(a) - unitSortKey(b) || a.localeCompare(b, "ko"))],
+        calendar,
+        ignoredFiles,
+        cached:false,
+      };
     }
     function metricSource(day, unit){ if(!day.fileName) return null; if(unit === allUnits) return day.total; return day.businessUnits[unit] || {participants:0, amount:0}; }
     function valueFor(src, metric){ if(!src) return null; if(metric === "participants") return src.participants; if(metric === "amount") return src.amount; return src.participants ? Math.round(src.amount / src.participants) : 0; }
